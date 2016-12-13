@@ -1,0 +1,4 @@
+﻿  GameScene.cpp
+cl : Command line warning D9028: minimal rebuild failure, reverting to normal build
+  ClientSFML.vcxproj -> E:\Documents\Dropbox\uni\multi\CPPDummyServer\ClientSFML\\bin\Debug_x86\ClientSFML.exe
+  ClientSFML.vcxproj -> E:\Documents\Dropbox\uni\multi\CPPDummyServer\ClientSFML\\bin\Debug_x86\ClientSFML.pdb (Full PDB)
