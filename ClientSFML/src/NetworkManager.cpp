@@ -57,7 +57,8 @@ void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, int& s
 			}
 		}
 
-		std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
 }
 
@@ -107,7 +108,9 @@ void snd_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* buff, bool& quit)
 			}
 		}
 
-		std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
+		// That many millis in one frame
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
 }
 

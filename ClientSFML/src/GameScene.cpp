@@ -88,6 +88,7 @@ void GameScene::Close()
 {
 	DetachEvent(EventID::Net_NewGameObject, *this);
 	DetachEvent(EventID::Net_UpdateGameObject, *this);
+	this->ClearGameObjects();
 }
 
 void GameScene::OnRender()

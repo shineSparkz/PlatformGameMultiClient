@@ -1,4 +1,4 @@
-﻿  GameScene.cpp
-cl : Command line warning D9028: minimal rebuild failure, reverting to normal build
-  ClientSFML.vcxproj -> E:\Documents\Dropbox\uni\multi\CPPDummyServer\ClientSFML\\bin\Debug_x86\ClientSFML.exe
-  ClientSFML.vcxproj -> E:\Documents\Dropbox\uni\multi\CPPDummyServer\ClientSFML\\bin\Debug_x86\ClientSFML.pdb (Full PDB)
+﻿  main.cpp
+     Creating library C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.lib and object C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exp
+sfml-main-d.lib(MainWin32.cpp.obj) : warning LNK4099: PDB 'vc140.pdb' was not found with 'sfml-main-d.lib(MainWin32.cpp.obj)' or at 'C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\bin\Debug_x86\vc140.pdb'; linking object as if no debug info
+  ClientSFML.vcxproj -> C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
