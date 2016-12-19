@@ -140,7 +140,7 @@ bool Application::Init(const std::string& app_name)
 	{
 		m_NetManager = new NetworkManager();
 
-		//m_NetManager->connectToServer("localhost", TCP_PORT, 35);
+		m_NetManager->connectToServer("localhost", TCP_PORT, 35);
 		// TODO : print if error 
 	}
 

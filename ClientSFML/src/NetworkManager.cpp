@@ -158,6 +158,26 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 {
 	if (!m_TcpSock)
 	{
+		// Look for broadcast
+		int bcastport = 8081;
+		sf::UdpSocket bcast;
+		bcast.bind(bcastport);
+		sf::IpAddress bcastIP;
+		unsigned short remotePort;
+
+		byte buff[256];
+		size_t rcvd;
+
+		bcast.send(buff, buffSize, "255.255.255.255", bcastport);
+
+		sf::Socket::Status sockStatus = bcast.receive(buff, 256, rcvd, bcastIP, remotePort);
+		if (sockStatus != sf::Socket::Status::Done)
+		{
+			// Error
+			return false;
+		}
+
+
 		m_TcpSock = new sf::TcpSocket();
 		m_TcpSock->setBlocking(true);
 
