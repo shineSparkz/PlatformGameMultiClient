@@ -42,6 +42,8 @@ private:
 	std::thread* m_TcpRcvThread;
 	std::thread* m_TcpSndThread;
 
+	std::string m_ServerIPAddr;
+
 	int m_LocalUdpPort;
 	int m_ServerUdpPort;
 	int m_ClientId;

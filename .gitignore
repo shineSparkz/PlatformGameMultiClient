@@ -4,3 +4,6 @@ ClientSFML\obj
 ClientSFML.sdf
 ClientSFML.VC.opendb
 ClientSFML.sdf
+ClientSFML/obj/Debug/x86/vc140.pdb
+*.pdb
+*.obj

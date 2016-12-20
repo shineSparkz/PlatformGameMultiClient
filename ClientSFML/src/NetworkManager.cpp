@@ -32,18 +32,18 @@ void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 	sock->unbind();
 }
 
-void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, int port)
+void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, std::string ipAddr, int port)
 {
 	unsigned char buffer[BUFF_SIZE];
 	memset(buffer, 0, BUFF_SIZE);
 	memcpy(buffer, msg.c_str(), msg.length());
 
-	if (sock->send(&buffer, BUFF_SIZE, sf::IpAddress::LocalHost, port) != sf::Socket::Done)
+	if (sock->send(&buffer, BUFF_SIZE, ipAddr, port) != sf::Socket::Done)
 	{
 	}
 }
 
-void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, int& serverUdpPort)
+void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, const std::string& ipAddr, int& serverUdpPort)
 {
 	while (!quit)
 	{
@@ -53,7 +53,7 @@ void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, int& s
 
 			if (msg.size() > 0)
 			{
-				send_udp_msg(msg, sock, serverUdpPort);
+				send_udp_msg(msg, sock, ipAddr, serverUdpPort);
 			}
 		}
 
@@ -78,8 +78,6 @@ void rcv_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 			boundbuffer->Deposit(std::string(buffer));
 		}
 	}
-
-	sock->disconnect();
 }
 
 void send_tcp_msg(const std::string& msg, sf::TcpSocket* sock)
@@ -159,31 +157,37 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 	if (!m_TcpSock)
 	{
 		// Look for broadcast
-		int bcastport = 8081;
-		sf::UdpSocket bcast;
-		bcast.bind(bcastport);
-		sf::IpAddress bcastIP;
-		unsigned short remotePort;
+		int broadcast_port = 8081;
+		sf::UdpSocket broadcast_socket;
+		
+		sf::IpAddress remote_ip;
+		unsigned short remote_port;
+		size_t received_bytes;
+		
+		char buff[32];
+		char rcv_buff[32];
+		memset(&buff, 0, 32);
+		memset(&rcv_buff, 0, 32);
 
-		byte buff[256];
-		size_t rcvd;
-
-		bcast.send(buff, buffSize, "255.255.255.255", bcastport);
-
-		sf::Socket::Status sockStatus = bcast.receive(buff, 256, rcvd, bcastIP, remotePort);
-		if (sockStatus != sf::Socket::Status::Done)
+		broadcast_socket.send(buff, 32, "255.255.255.255", broadcast_port);
+		
+		sf::Socket::Status broadcast_status = broadcast_socket.receive(&rcv_buff, 32, received_bytes, remote_ip, remote_port);
+		if (broadcast_status != sf::Socket::Status::Done)
 		{
 			// Error
+			WRITE_LOG("Could not resolve server address", "error");
 			return false;
 		}
 
-
+		std::string server_address = remote_ip.toString();
+		
+		// Attempt to connect to server now
 		m_TcpSock = new sf::TcpSocket();
 		m_TcpSock->setBlocking(true);
 
 		m_BoundedBuffSize = buffSize;
 
-		sf::Socket::Status status = m_TcpSock->connect(ipAddr, onPort);
+		sf::Socket::Status status = m_TcpSock->connect(server_address, onPort);
 
 		if (status != sf::Socket::Status::Done)
 		{
@@ -191,6 +195,9 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 			SAFE_DELETE(m_TcpSock);
 			return false;
 		}
+
+		// Now we have connection, store servers address for UDP
+		m_ServerIPAddr = server_address;
 
 		/*
 		switch (status)
@@ -244,7 +251,7 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 		m_UdpRcvThread = new std::thread(rcv_udp_thread, std::ref(m_UdpSock), std::ref(m_UdpRcvBuffer), std::ref(m_Quit));
 		m_UdpRcvThread->detach();
 
-		m_UdpSndThread = new std::thread(snd_udp_thread, std::ref(m_UdpSock), std::ref(m_UdpSndBuffer), std::ref(m_Quit), std::ref(m_ServerUdpPort));
+		m_UdpSndThread = new std::thread(snd_udp_thread, std::ref(m_UdpSock), std::ref(m_UdpSndBuffer), std::ref(m_Quit), m_ServerIPAddr, std::ref(m_ServerUdpPort));
 		m_UdpSndThread->detach();
 
 		m_Connected = true;
