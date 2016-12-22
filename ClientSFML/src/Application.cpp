@@ -39,6 +39,7 @@ Application::Application() :
 
 Application::~Application()
 {
+	this->Close();
 }
 
 bool Application::Init(const std::string& app_name)

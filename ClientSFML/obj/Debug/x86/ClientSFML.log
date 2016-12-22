@@ -1,20 +1,6 @@
-﻿  TextFile.cpp
-  Screen.cpp
-c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\screen.cpp(294): warning C4996: 'sf::Text::setColor': was declared deprecated
-  c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\sfml\include32\sfml\graphics\text.hpp(177): note: see declaration of 'sf::Text::setColor'
-  SceneGraph.cpp
-  NetworkManager.cpp
-  LogFile.cpp
-  KeyEvent.cpp
-  IScene.cpp
-  GameScene.cpp
-  EventManager.cpp
-  Event.cpp
-  BoundedBuffer.cpp
-  Application.cpp
+﻿  Application.cpp
   main.cpp
   Generating Code...
-  LINK : C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe not found or not built by the last incremental link; performing full link
      Creating library C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.lib and object C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exp
 sfml-main-d.lib(MainWin32.cpp.obj) : warning LNK4099: PDB 'vc140.pdb' was not found with 'sfml-main-d.lib(MainWin32.cpp.obj)' or at 'C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\bin\Debug_x86\vc140.pdb'; linking object as if no debug info
   ClientSFML.vcxproj -> C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe

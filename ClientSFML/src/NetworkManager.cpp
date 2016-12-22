@@ -32,7 +32,7 @@ void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 	sock->unbind();
 }
 
-void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, std::string ipAddr, int port)
+void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, const std::string& ipAddr, int port)
 {
 	unsigned char buffer[BUFF_SIZE];
 	memset(buffer, 0, BUFF_SIZE);
@@ -43,7 +43,7 @@ void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, std::string ipAdd
 	}
 }
 
-void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, const std::string& ipAddr, int& serverUdpPort)
+void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, const std::string ipAddr, int& serverUdpPort)
 {
 	while (!quit)
 	{
@@ -169,7 +169,9 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 		memset(&buff, 0, 32);
 		memset(&rcv_buff, 0, 32);
 
-		broadcast_socket.send(buff, 32, "255.255.255.255", broadcast_port);
+		//broadcast_socket.send(buff, 32, "255.255.255.255", broadcast_port);
+		broadcast_socket.send(buff, 32, "192.168.0.255", broadcast_port);
+		// TODO : Bail if that doesn't work
 		
 		sf::Socket::Status broadcast_status = broadcast_socket.receive(&rcv_buff, 32, received_bytes, remote_ip, remote_port);
 		if (broadcast_status != sf::Socket::Status::Done)
@@ -240,7 +242,8 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 		m_UdpSock->setBlocking(true);
 
 		// Get system to set free port
-		m_UdpSock->bind(sf::Socket::AnyPort);
+		//m_UdpSock->bind(sf::Socket::AnyPort);	// For some reason this was not working in certain situations
+		m_UdpSock->bind(160187);
 		m_LocalUdpPort = m_UdpSock->getLocalPort();
 		// TODO : Log port
 
@@ -309,6 +312,7 @@ void NetworkManager::fetchAllMessages()
 
 							// Send First udp msg
 							m_UdpSndBuffer->Deposit(std::to_string(m_ClientId) + ":UDP:0");
+							bool b = false;
 						}
 					}
 					else if (packet_name == "mapdata")

@@ -16,7 +16,6 @@ int main()
 	}
 
 	app.Run();
-	app.Close();
 	return 0;
 }
 
