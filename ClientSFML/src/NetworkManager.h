@@ -18,7 +18,7 @@ public:
 	NetworkManager();
 	~NetworkManager();
 
-	bool connectToServer(const std::string& ipAddr, int onPort, int bufferSize);
+	bool connectToServer(int onPort, int bufferSize);
 	void sendUdp(const std::string& msg);
 	void sendTcp(const std::string& msg);
 
@@ -29,6 +29,7 @@ public:
 	int clientId()const;
 
 private:
+	friend class LobbyScene;//TODO
 	BoundedBuffer* m_UdpRcvBuffer;
 	BoundedBuffer* m_UdpSndBuffer;
 	BoundedBuffer* m_TcpRcvBuffer;

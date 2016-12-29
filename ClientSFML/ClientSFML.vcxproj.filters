@@ -55,6 +55,15 @@
     <ClCompile Include="src\NetworkManager.cpp">
       <Filter>Network</Filter>
     </ClCompile>
+    <ClCompile Include="src\TitleScene.cpp">
+      <Filter>SceneManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LobbyScene.cpp">
+      <Filter>SceneManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\BoundedBuffer.h">
@@ -122,6 +131,12 @@
     </ClInclude>
     <ClInclude Include="src\NetworkManager.h">
       <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TitleScene.h">
+      <Filter>SceneManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LobbyScene.h">
+      <Filter>SceneManagement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

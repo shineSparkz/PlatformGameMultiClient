@@ -72,7 +72,7 @@ bool GameScene::OnCreate(Context* const con)
 	AttachEvent(EventID::Net_NewGameObject, *this);
 	AttachEvent(EventID::Net_UpdateGameObject, *this);
 
-	// TODO : Move this 
+	// TODO : Move this HARDCODED level construction
 
 	for (int i = 1; i < 12; ++i)
 	{

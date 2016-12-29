@@ -16,9 +16,9 @@
 const float THREAD_SLEEP = 1 / 60.0f;
 
 // ---- Temp ----
-const int PKT_REG = 0;
-const int PKT_MAP = 1;
-
+const int PKT_REG_TCP = 0;
+const int PKT_GAME_PLAYER_OBJECTS_TCP = 1;
+const int PKT_INPUT_UPDATE_UDP = 2;
 
 void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 {
@@ -164,7 +164,7 @@ NetworkManager::~NetworkManager()
 	SAFE_DELETE(m_UdpSock);
 }
 
-bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int buffSize)
+bool NetworkManager::connectToServer(int onPort, int buffSize)
 {
 	if (!m_TcpSock)
 	{
@@ -311,7 +311,6 @@ void NetworkManager::fetchAllMessages()
 					continue;
 				}
 
-
 				if (jd.HasMember("name"))
 				{
 					if (jd["name"].IsInt())
@@ -320,7 +319,7 @@ void NetworkManager::fetchAllMessages()
 
 						switch(packetName)
 						{
-						case PKT_REG:
+						case PKT_REG_TCP:
 							// Reg
 							m_ClientId = jd["clientId"].GetInt();
 							m_ServerUdpPort = jd["udpPort"].GetInt();
@@ -328,29 +327,146 @@ void NetworkManager::fetchAllMessages()
 							// Send First udp msg
 							m_UdpSndBuffer->Deposit(std::to_string(m_ClientId) + ":UDP:0");
 							break;
-						case PKT_MAP:
+						case PKT_GAME_PLAYER_OBJECTS_TCP:
 						{
-							// TODO : Move this
-							int objectId = -1;
-							int unqId = -1;
-							float x = -1;
-							float y = -1;
-							int isThisMe = -1;
-
-							// Parse Data
-							if (jd.HasMember("oid"))
+							// Get Array of objects (could be one)
+							if (jd.HasMember("objects"))
 							{
-								if (jd["oid"].IsInt())
+								if (jd["objects"].IsArray())
 								{
-									objectId = jd["oid"].GetInt();
+									auto client_array = jd["objects"].GetArray();
+
+									// Iterate player array
+									for (auto arr_it = client_array.Begin(); arr_it != client_array.End(); ++arr_it)
+									{
+										if (arr_it->IsObject())
+										{
+											auto obj = arr_it->GetObject();
+
+											int objectId = -1;
+											int unqId = -1;
+											float x = -1;
+											float y = -1;
+											int isThisMe = -1;
+
+											// Parse Data
+											if (obj.HasMember("oid"))
+											{
+												if (obj["oid"].IsInt())
+												{
+													objectId = obj["oid"].GetInt();
+												}
+											}
+
+											if (obj.HasMember("uid"))
+											{
+												if (obj["uid"].IsInt())
+												{
+													unqId = obj["uid"].GetInt();
+												}
+											}
+
+											if (obj.HasMember("px"))
+											{
+												if (obj["px"].IsFloat())
+												{
+													x = obj["px"].GetFloat();
+												}
+												else if (obj["px"].IsInt())
+												{
+													x = (float)obj["px"].GetInt();
+												}
+											}
+
+											if (obj.HasMember("py"))
+											{
+												if (obj["py"].IsFloat())
+												{
+													y = obj["py"].GetFloat();
+												}
+												else if (obj["py"].IsInt())
+												{
+													y = (float)obj["py"].GetInt();
+												}
+											}
+
+											if (obj.HasMember("clt"))
+											{
+												if (obj["clt"].IsInt())
+												{
+													isThisMe = obj["clt"].GetInt();
+												}
+											}
+
+											// Create Object from parsed data
+											GameObject go;
+											go.m_TypeId = objectId;
+											go.m_UniqueId = unqId;
+
+											sf::Sprite spr;
+											spr.setPosition(Vec2(x,y));
+											spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Player));
+											spr.setTextureRect(sf::IntRect(0, 0, 64, 64));
+											spr.setScale(Vec2(2.0f, 2.0f));
+											go.m_Sprite = spr;
+
+											if (isThisMe == 1)
+											{
+												m_PlayerHandle = unqId;
+											}
+
+											SendEvent(EventID::Net_NewGameObject, &go);
+										}
+									}
 								}
 							}
+						}
+							break;
+						default:
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 
-							if (jd.HasMember("uid"))
+	// -- Drain UDP Buffer ---
+	if (m_UdpRcvBuffer->count_ > 0)
+	{
+		while (m_UdpRcvBuffer->count_ > 0)
+		{
+			std::string packet = m_UdpRcvBuffer->Fetch();
+
+			if (packet.size() > 0)
+			{
+				rapidjson::Document jd;
+				jd.Parse(packet.c_str());
+
+				if (!jd.IsObject())
+				{
+					continue;
+				}
+
+				if (jd.HasMember("name"))
+				{
+					if (jd["name"].IsInt())
+					{
+						int packetName = jd["name"].GetInt();
+
+						switch (packetName)
+						{
+						case PKT_INPUT_UPDATE_UDP:
+							int obj_id = -1;
+							float x = -1;
+							float y = -1;
+							
+							// Parse
+							if (jd.HasMember("handle"))
 							{
-								if (jd["uid"].IsInt())
+								if (jd["handle"].IsInt())
 								{
-									unqId = jd["uid"].GetInt();
+									obj_id = jd["handle"].GetInt();
 								}
 							}
 
@@ -360,6 +476,10 @@ void NetworkManager::fetchAllMessages()
 								{
 									x = jd["px"].GetFloat();
 								}
+								else if (jd["px"].IsInt())
+								{
+									x = (float)jd["px"].GetInt();
+								}
 							}
 
 							if (jd.HasMember("py"))
@@ -368,199 +488,24 @@ void NetworkManager::fetchAllMessages()
 								{
 									y = jd["py"].GetFloat();
 								}
-							}
-
-							if (jd.HasMember("clt"))
-							{
-								if (jd["clt"].IsInt())
+								else if (jd["py"].IsInt())
 								{
-									isThisMe = jd["clt"].GetInt();
+									y = (float)jd["py"].GetInt();
 								}
 							}
+							
+							
+							Vec2 statePos((float)x, (float)y);
 
-							// Create Object from parsed data
-							GameObject go;
-							go.m_TypeId = objectId;
-							go.m_UniqueId = unqId;
+							// TODO : tidy all this
+							NetState ns;
+							ns.object_handle = obj_id;
+							ns.position = statePos;
 
-							sf::Sprite spr;
-							spr.setPosition(Vec2((float)x, (float)y));
-
-							// TODO : New design this is literally going to be just players
-							if (objectId == (int)ID::Type::Wall)
-							{
-								spr.setTexture(
-									Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
-							}
-							else if (objectId == (int)ID::Type::Player)
-							{
-								spr.setTexture(
-									Application::Instance()->GetTexHolder().Get(ID::Texture::Player));
-								spr.setTextureRect(sf::IntRect(0, 0, 64, 64));
-								spr.setScale(Vec2(2.0f, 2.0f));
-
-								if (isThisMe == 1)
-								{
-									m_PlayerHandle = unqId;
-								}
-							}
-							else
-							{
-								// error
-								return;
-							}
-
-							go.m_Sprite = spr;
-
-							SendEvent(EventID::Net_NewGameObject, &go);
-
-						}
-							break;
-						default:
+							SendEvent(EventID::Net_UpdateGameObject, &ns);
 							break;
 						}
 					}
-				}
-
-			}
-
-			/*
-			// See if we got more than one packet here
-			auto all_packets = util::split_str(packet, '!');
-
-			for (size_t i = 0; i < all_packets.size() - 1; ++i)
-			{
-				auto current_packet = util::split_str(all_packets[i], ':');
-
-				if (!current_packet.empty())
-				{
-					std::string packet_name = current_packet[0];
-
-					if (packet_name == "reg")
-					{
-						// Log
-						//if (g_ShouldPrintUI)
-						//	update_ui_info(info_q, "Fetched: " + packet + ", count: " + std::to_string(rcv_tcp_boundedBuffer.count_));
-
-						if (current_packet.size() >= 3)
-						{
-							m_ClientId = std::stoi(current_packet[1]);
-							m_ServerUdpPort = std::stoi(current_packet[2]);
-
-							// Send First udp msg
-							m_UdpSndBuffer->Deposit(std::to_string(m_ClientId) + ":UDP:0");
-							bool b = false;
-						}
-					}
-					else if (packet_name == "mapdata")
-					{
-						// Log
-						//if (g_ShouldPrintUI)
-						//	update_ui_info(info_q, "Fetched: " + packet + ", count: " + std::to_string(rcv_tcp_boundedBuffer.count_));
-
-						if (current_packet.size() > 1)
-						{
-							// Loop each object
-							for (size_t j = 1; j < current_packet.size() - 1; ++j)
-							{
-								// Split this by comas
-								auto obj_split = util::split_str(current_packet[j], ',');
-
-								if (obj_split.size() >= 5)
-								{
-									int obj_id = std::stoi(obj_split[0]);
-									int unq_id = std::stoi(obj_split[1]);
-									int x = std::stoi(obj_split[2]);
-									int y = std::stoi(obj_split[3]);
-									int isMyPlayer = std::stoi(obj_split[4]);
-
-									// Create Object from parsed data
-									GameObject go;
-									go.m_TypeId = obj_id;
-									go.m_UniqueId = unq_id;
-
-									sf::Sprite spr;
-									spr.setPosition(Vec2((float)x, (float)y));
-
-									if (obj_id == (int)ID::Type::Wall)
-									{
-										spr.setTexture(
-											Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
-									}
-									else if (obj_id == (int)ID::Type::Player)
-									{
-										spr.setTexture(
-											Application::Instance()->GetTexHolder().Get(ID::Texture::Player));
-										spr.setTextureRect(sf::IntRect(0, 0, 64, 64));
-										spr.setScale(Vec2(2.0f, 2.0f));
-
-										if (isMyPlayer == 1)
-										{
-											m_PlayerHandle = unq_id;
-										}
-									}
-									else
-									{
-										// error
-										return;
-									}
-
-									go.m_Sprite = spr;
-
-									//GameObjects.push_back(go);
-									// Send event here or something like that
-									SendEvent(EventID::Net_NewGameObject, &go);
-								}
-							}
-						}
-					}
-				}
-			}
-			*/
-		}
-	}
-
-	// -- Drain UDP Buffer ---
-	if (m_UdpRcvBuffer->count_ > 0)
-	{
-		// Display UDP
-		while (m_UdpRcvBuffer->count_ > 0)
-		{
-			std::string packet = m_UdpRcvBuffer->Fetch();
-
-			// Try parse for updates
-			auto packet_split = util::split_str(packet, ':');
-
-			// Load Level Data
-			if (packet_split.size() >= 4)
-			{
-				if (packet_split[0] == "objupd")
-				{
-					int obj_id = std::stoi(packet_split[1]);
-					int x = std::stoi(packet_split[2]);
-					int y = std::stoi(packet_split[3]);
-					Vec2 statePos((float)x, (float)y);
-
-					// TODO : tidy all this
-					NetState ns;
-					ns.object_handle = obj_id;
-					ns.position = statePos;
-
-					SendEvent(EventID::Net_UpdateGameObject, &ns);
-
-					/*
-					Vec2 diff = statePos - GameObjects[obj_id].m_Sprite.getPosition();
-					float dist = Maths::Length(diff);
-
-					if (dist > 2.0f)
-					{
-						GameObjects[obj_id].m_Sprite.setPosition(statePos);
-					}
-					else if (dist > 0.1f)
-					{
-						GameObjects[obj_id].m_Sprite.setPosition(diff * 0.1f);
-					}
-					*/
 				}
 			}
 		}

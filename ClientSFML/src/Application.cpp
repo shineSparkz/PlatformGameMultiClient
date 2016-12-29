@@ -7,7 +7,8 @@
 #include "Screen.h"
 #include "KeyEvent.h"
 #include "NetworkManager.h"
-//#include "TitleScene.h"
+#include "TitleScene.h"
+#include "LobbyScene.h"
 //#include "PauseScene.h"
 //#include "WorldMapScene.h"
 //#include "InventoryScene.h"
@@ -124,24 +125,26 @@ bool Application::Init(const std::string& app_name)
 	// Create States ( this shouldn't be here)
 	m_SceneGraph = new SceneGraph(new IScene::Context(*m_Window, m_Screen->m_MainView, m_TextureHolder, m_FontHolder));
 	GameScene gam;
-	//TitleState tit;
+	TitleScene tit;
+	LobbyScene lob;
 	//PauseState pas;
 	//WorldMapState wm;
 	//InventoryState inv;
+
 	m_SceneGraph->RegisterState(ID::States::Game, gam);
-	//m_SceneGraph->RegisterState(ID::States::Title, tit);
-	//m_SceneGraph->RegisterState(ID::States::Pause, pas);
+	m_SceneGraph->RegisterState(ID::States::Title, tit);
+	m_SceneGraph->RegisterState(ID::States::Lobby, lob);
 	//m_SceneGraph->RegisterState(ID::States::WorldMap, wm);
 	//m_SceneGraph->RegisterState(ID::States::Inventory, inv);
 
 	m_SceneGraph->Init();
-	ChangeState(ID::States::Game);
+	ChangeState(ID::States::Title);
 
 	if (!m_NetManager)
 	{
 		m_NetManager = new NetworkManager();
 
-		m_NetManager->connectToServer("localhost", TCP_PORT, 35);
+		//m_NetManager->connectToServer(TCP_PORT, 35);
 		// TODO : print if error 
 	}
 

@@ -170,11 +170,14 @@
     <ClCompile Include="src\GameScene.cpp" />
     <ClCompile Include="src\IScene.cpp" />
     <ClCompile Include="src\KeyEvent.cpp" />
+    <ClCompile Include="src\LobbyScene.cpp" />
     <ClCompile Include="src\LogFile.cpp" />
     <ClCompile Include="src\NetworkManager.cpp" />
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\Screen.cpp" />
     <ClCompile Include="src\TextFile.cpp" />
+    <ClCompile Include="src\TitleScene.cpp" />
+    <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h" />
@@ -188,6 +191,7 @@
     <ClInclude Include="src\identifiers.h" />
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\KeyEvent.h" />
+    <ClInclude Include="src\LobbyScene.h" />
     <ClInclude Include="src\LogFile.h" />
     <ClInclude Include="src\NetState.h" />
     <ClInclude Include="src\NetworkManager.h" />
@@ -197,6 +201,7 @@
     <ClInclude Include="src\Singleton.h" />
     <ClInclude Include="src\SceneGraph.h" />
     <ClInclude Include="src\TextFile.h" />
+    <ClInclude Include="src\TitleScene.h" />
     <ClInclude Include="src\types.h" />
     <ClInclude Include="src\utils.h" />
   </ItemGroup>

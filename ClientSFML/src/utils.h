@@ -142,7 +142,7 @@ namespace util
 	}
 }
 
-namespace random
+namespace rando
 {
 	int RandomRange(int32 min, int32 max);
 	float RandFloat(float min, float max);
