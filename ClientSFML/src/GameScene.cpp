@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include "NetState.h"
 #include "NetworkManager.h"
+#include "Application.h"
 #include "utils.h"
 
 GameScene::GameScene() : 
@@ -71,6 +72,33 @@ bool GameScene::OnCreate(Context* const con)
 	AttachEvent(EventID::Net_NewGameObject, *this);
 	AttachEvent(EventID::Net_UpdateGameObject, *this);
 
+	// TODO : Move this 
+
+	for (int i = 1; i < 12; ++i)
+	{
+		// Create Object from parsed data
+		GameObject* go = new GameObject();
+		go->m_TypeId = (int)ID::Type::Wall;
+		go->m_UniqueId = m_GameObjects.size();
+
+		sf::Sprite spr;
+		spr.setPosition(Vec2((float)i*64, (float)450));
+		spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
+		go->m_Sprite = spr;
+
+		m_GameObjects.push_back(go);
+	}
+
+
+	GameObject* go = new GameObject();
+	go->m_TypeId = (int)ID::Type::Wall;
+	go->m_UniqueId = m_GameObjects.size();
+	sf::Sprite spr;
+	spr.setPosition(Vec2(7 * 64, 350));
+	spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
+	go->m_Sprite = spr;
+	m_GameObjects.push_back(go);
+
 	return true;
 }
 
@@ -115,7 +143,7 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 	{
 		t += dt.asSeconds();
 
-		if (t > 5.0f)
+		if (t > 2.0f)
 		{
 			m_SceneReady = true;
 		}

@@ -8,13 +8,24 @@
 #include "EventManager.h"
 #include "Application.h"
 
+#include <rapidjson\document.h>
+#include <rapidjson\writer.h>
+#include <rapidjson\stringbuffer.h>
+#include <rapidjson\pointer.h>
+
 const float THREAD_SLEEP = 1 / 60.0f;
+
+// ---- Temp ----
+const int PKT_REG = 0;
+const int PKT_MAP = 1;
+
 
 void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 {
 	while (!quit)
 	{
 		char buffer[BUFF_SIZE];
+		memset(&buffer, 0, BUFF_SIZE);
 		std::size_t received;
 
 		sf::IpAddress rcv_ip;
@@ -67,6 +78,7 @@ void rcv_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 	while (!quit)
 	{
 		char buffer[BUFF_SIZE];
+		memset(buffer, 0, BUFF_SIZE);
 		std::size_t received;
 
 		if (sock->receive(buffer, BUFF_SIZE, received) != sf::Socket::Done)
@@ -243,7 +255,8 @@ bool NetworkManager::connectToServer(const std::string& ipAddr, int onPort, int 
 
 		// Get system to set free port
 		//m_UdpSock->bind(sf::Socket::AnyPort);	// For some reason this was not working in certain situations
-		m_UdpSock->bind(160187);
+		//32767
+		m_UdpSock->bind(0);
 		m_LocalUdpPort = m_UdpSock->getLocalPort();
 		// TODO : Log port
 
@@ -288,6 +301,130 @@ void NetworkManager::fetchAllMessages()
 		{
 			std::string packet = m_TcpRcvBuffer->Fetch();
 
+			if (packet.size() > 0)
+			{
+				rapidjson::Document jd;
+				jd.Parse(packet.c_str());
+
+				if (!jd.IsObject())
+				{
+					continue;
+				}
+
+
+				if (jd.HasMember("name"))
+				{
+					if (jd["name"].IsInt())
+					{
+						int packetName = jd["name"].GetInt();
+
+						switch(packetName)
+						{
+						case PKT_REG:
+							// Reg
+							m_ClientId = jd["clientId"].GetInt();
+							m_ServerUdpPort = jd["udpPort"].GetInt();
+
+							// Send First udp msg
+							m_UdpSndBuffer->Deposit(std::to_string(m_ClientId) + ":UDP:0");
+							break;
+						case PKT_MAP:
+						{
+							// TODO : Move this
+							int objectId = -1;
+							int unqId = -1;
+							float x = -1;
+							float y = -1;
+							int isThisMe = -1;
+
+							// Parse Data
+							if (jd.HasMember("oid"))
+							{
+								if (jd["oid"].IsInt())
+								{
+									objectId = jd["oid"].GetInt();
+								}
+							}
+
+							if (jd.HasMember("uid"))
+							{
+								if (jd["uid"].IsInt())
+								{
+									unqId = jd["uid"].GetInt();
+								}
+							}
+
+							if (jd.HasMember("px"))
+							{
+								if (jd["px"].IsFloat())
+								{
+									x = jd["px"].GetFloat();
+								}
+							}
+
+							if (jd.HasMember("py"))
+							{
+								if (jd["py"].IsFloat())
+								{
+									y = jd["py"].GetFloat();
+								}
+							}
+
+							if (jd.HasMember("clt"))
+							{
+								if (jd["clt"].IsInt())
+								{
+									isThisMe = jd["clt"].GetInt();
+								}
+							}
+
+							// Create Object from parsed data
+							GameObject go;
+							go.m_TypeId = objectId;
+							go.m_UniqueId = unqId;
+
+							sf::Sprite spr;
+							spr.setPosition(Vec2((float)x, (float)y));
+
+							// TODO : New design this is literally going to be just players
+							if (objectId == (int)ID::Type::Wall)
+							{
+								spr.setTexture(
+									Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
+							}
+							else if (objectId == (int)ID::Type::Player)
+							{
+								spr.setTexture(
+									Application::Instance()->GetTexHolder().Get(ID::Texture::Player));
+								spr.setTextureRect(sf::IntRect(0, 0, 64, 64));
+								spr.setScale(Vec2(2.0f, 2.0f));
+
+								if (isThisMe == 1)
+								{
+									m_PlayerHandle = unqId;
+								}
+							}
+							else
+							{
+								// error
+								return;
+							}
+
+							go.m_Sprite = spr;
+
+							SendEvent(EventID::Net_NewGameObject, &go);
+
+						}
+							break;
+						default:
+							break;
+						}
+					}
+				}
+
+			}
+
+			/*
 			// See if we got more than one packet here
 			auto all_packets = util::split_str(packet, '!');
 
@@ -379,6 +516,7 @@ void NetworkManager::fetchAllMessages()
 					}
 				}
 			}
+			*/
 		}
 	}
 
