@@ -1,6 +1,7 @@
 #include "src\Application.h"
 
 int main()
+
 {
 #ifdef _WIN32
 	// Memory leak checker

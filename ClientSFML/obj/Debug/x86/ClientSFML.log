@@ -1,4 +1,8 @@
-﻿  LobbyScene.cpp
-c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\lobbyscene.h(23): warning C4373: 'LobbyScene::OnCreate': virtual function overrides 'IScene::OnCreate', previous versions of the compiler did not override when parameters only differed by const/volatile qualifiers
-  c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\iscene.h(42): note: see declaration of 'IScene::OnCreate'
-  ClientSFML.vcxproj -> C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
+﻿  NetworkManager.cpp
+  MessageParser.cpp
+  main.cpp
+  Generating Code...
+     Creating library E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.lib and object E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exp
+sfml-main-d.lib(MainWin32.cpp.obj) : warning LNK4099: PDB 'vc140.pdb' was not found with 'sfml-main-d.lib(MainWin32.cpp.obj)' or at 'E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\bin\Debug_x86\vc140.pdb'; linking object as if no debug info
+  ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
+  ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.pdb (Full PDB)

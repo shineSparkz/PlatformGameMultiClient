@@ -172,6 +172,7 @@
     <ClCompile Include="src\KeyEvent.cpp" />
     <ClCompile Include="src\LobbyScene.cpp" />
     <ClCompile Include="src\LogFile.cpp" />
+    <ClCompile Include="src\MessageParser.cpp" />
     <ClCompile Include="src\NetworkManager.cpp" />
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\Screen.cpp" />
@@ -193,6 +194,8 @@
     <ClInclude Include="src\KeyEvent.h" />
     <ClInclude Include="src\LobbyScene.h" />
     <ClInclude Include="src\LogFile.h" />
+    <ClInclude Include="src\MessageParser.h" />
+    <ClInclude Include="src\NetPackets.h" />
     <ClInclude Include="src\NetState.h" />
     <ClInclude Include="src\NetworkManager.h" />
     <ClInclude Include="src\Point.h" />

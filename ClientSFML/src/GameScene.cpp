@@ -8,6 +8,13 @@
 #include "Application.h"
 #include "utils.h"
 
+#include "NetworkManager.h"
+
+// Sort this out
+float t = 0.0f;
+rapidjson::StringBuffer g_sBuffer;
+
+
 GameScene::GameScene() : 
 	IScene()
 {
@@ -134,8 +141,6 @@ void GameScene::LateRender()
 {
 }
 
-float t = 0.0f;
-
 bool GameScene::OnUpdate(const sf::Time& dt)
 {
 	// TODO : Remove this hack
@@ -164,21 +169,33 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 
 void GameScene::HandleInput(int k, int a)
 {
+	// TODO : Put this in a network component
 	if (NetworkManager::Instance()->connected())
 	{
-		NetworkManager::Instance()->sendUdp(
-			"input:" + std::to_string(k) + ":" + std::to_string(NetworkManager::Instance()->clientId()));
-		
-		size_t playerId = (size_t)NetworkManager::Instance()->playerId();
+		rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
 
+		g_Writer.StartObject();
+		g_Writer.Key("name");	// Always need this
+		g_Writer.Int((int)Packet::ID::OUT_UDP_Input);
+		g_Writer.Key("input");
+		g_Writer.Int(k);
+		g_Writer.Key("id");
+		g_Writer.Uint(NetworkManager::Instance()->clientId());
+		g_Writer.EndObject();
+
+		NetworkManager::Instance()->sendUdp(g_sBuffer.GetString());
+		g_sBuffer.Clear();
+
+		// Predict Locally
+		size_t playerId = (size_t)NetworkManager::Instance()->playerId();
 		if (k == sf::Keyboard::D)
 			m_GameObjects[playerId]->m_Sprite.move(3.0f, 0.0f);
 		else if (k == sf::Keyboard::A)
 			m_GameObjects[playerId]->m_Sprite.move(-3.0f, 0.0f);
 		else if (k == sf::Keyboard::W)
 			m_GameObjects[playerId]->m_Sprite.move(0.0f, -3.0f);
-		else if (k == sf::Keyboard::D)
-			m_GameObjects[playerId]->m_Sprite.move(0.0f, 3.0f);
+		//else if (k == sf::Keyboard::S)
+		//	m_GameObjects[playerId]->m_Sprite.move(0.0f, 3.0f);	// I have left this on purpose for testing
 	}
 }
 

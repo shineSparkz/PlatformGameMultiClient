@@ -51,7 +51,7 @@ void LobbyScene::HandleInput(int k, int a)
 				return;
 			}
 
-			m_UserInfoStr = "Press Space When Ready to Start";
+			m_UserInfoStr = "Press Space When Ready to Start Game";
 		}
 	}
 
@@ -60,17 +60,33 @@ void LobbyScene::HandleInput(int k, int a)
 		NetworkManager* nm = NetworkManager::Instance();
 
 		// TODO : Would check other clients are ready to, possibly in thr client struct map
-		//if (mm->Connected() && mm->Registerd() && mm->InMultiplayerMode())
-		//{
+		if (nm->connected())  //&& mm->Registerd() && mm->InMultiplayerMode())
+		{
 		//	int levelToLoad = 0;
 		//	EventManager::Instance()->SendEvent(events::GameEventID::SetLevelToLoad, &levelToLoad);
+			
+			// We need to load the level here and then tell server so we get all the correct indices
 			ChangeState(ID::States::Game);
-			if (!nm->connectToServer(TCP_PORT, 35))
-			{
+			
+			// Send TCP to start game
+			rapidjson::StringBuffer g_sBuffer;
+			rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
+
+			g_Writer.StartObject();
+			g_Writer.Key("name");
+			g_Writer.Int((int)Packet::ID::OUT_TCP_StartGame);
+			g_Writer.Key("id");
+			g_Writer.Uint(NetworkManager::Instance()->clientId());
+			g_Writer.EndObject();
+
+			NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+
+			//if (!nm->connectToServer(TCP_PORT, 35))
+			//{
 				// TODO LOG
-				return;
-			}
-		//}
+			//	return;
+			//}
+		}
 	}
 }
 
@@ -78,7 +94,7 @@ bool LobbyScene::OnCreate(Context* context)
 {
 	m_context = context;
 	m_ConfigOptions.resize(4);
-	m_UserInfoStr = "";
+	m_UserInfoStr = "Press [" + KeyBindings::GetStringFromKey(CONFIRM_BUTTON) + "] to connect";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
