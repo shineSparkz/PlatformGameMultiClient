@@ -7,6 +7,8 @@ struct NetState
 {
 	int object_handle;
 	Vec2 position;
+	float frameX = 0;
+	float frameY = 0;
 };
 
 #endif

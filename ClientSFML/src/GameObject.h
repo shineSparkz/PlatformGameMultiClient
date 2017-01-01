@@ -9,6 +9,8 @@ public:
 	sf::Sprite m_Sprite;
 	int m_UniqueId;
 	int m_TypeId;
+	float m_FrameSizeX;
+	float m_FrameSizeY;
 };
 
 #endif

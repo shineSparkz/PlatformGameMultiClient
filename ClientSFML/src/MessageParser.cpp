@@ -123,6 +123,8 @@ void MessageParser::tcp_new_player(const rapidjson::Document& jd)
 					GameObject go;
 					go.m_TypeId = objectId;
 					go.m_UniqueId = unqId;
+					go.m_FrameSizeX = 64;
+					go.m_FrameSizeY = 64;
 
 					sf::Sprite spr;
 					spr.setPosition(Vec2(x, y));
@@ -155,6 +157,10 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 			int obj_id = -1;
 			float x = -1;
 			float y = -1;
+			float fx = -1;
+			float fy = -1;
+
+			bool fail_parse = false;
 
 			// Parse
 			if (jd.HasMember("handle"))
@@ -175,7 +181,16 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 				{
 					x = (float)jd["px"].GetInt();
 				}
+				else
+				{
+					fail_parse = true;
+				}
 			}
+			else
+			{
+				fail_parse = true;
+			}
+
 
 			if (jd.HasMember("py"))
 			{
@@ -187,17 +202,67 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 				{
 					y = (float)jd["py"].GetInt();
 				}
+				else
+				{
+					fail_parse = true;
+				}
+			}
+			else
+			{
+				fail_parse = true;
+			}
+
+			if (jd.HasMember("fx"))
+			{
+				if (jd["fx"].IsFloat())
+				{
+					fx = jd["fx"].GetFloat();
+				}
+				else if (jd["fx"].IsInt())
+				{
+					fx = (float)jd["fx"].GetInt();
+				}
+				else
+				{
+					fail_parse = true;
+				}
+			}
+			else
+			{
+				fail_parse = true;
 			}
 
 
-			Vec2 statePos((float)x, (float)y);
+			if (jd.HasMember("fy"))
+			{
+				if (jd["fy"].IsFloat())
+				{
+					fy = jd["fy"].GetFloat();
+				}
+				else if (jd["fy"].IsInt())
+				{
+					fy = (float)jd["fy"].GetInt();
+				}
+				else
+				{
+					fail_parse = true;
+				}
+			}
+			else
+			{
+				fail_parse = true;
+			}
 
-			// TODO : tidy all this
-			NetState ns;
-			ns.object_handle = obj_id;
-			ns.position = statePos;
+			if (!fail_parse)
+			{
+				NetState ns;
+				ns.object_handle = obj_id;
+				ns.position = Vec2(x, y);
+				ns.frameX = fx;
+				ns.frameY = fy;
+				SendEvent(EventID::Net_UpdateGameObject, &ns);
+			}
 
-			SendEvent(EventID::Net_UpdateGameObject, &ns);
 			break;
 		}
 	}

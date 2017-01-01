@@ -1,8 +1,8 @@
-﻿  NetworkManager.cpp
-  MessageParser.cpp
-  main.cpp
+﻿  GameScene.cpp
+c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\gamescene.cpp(72): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\gamescene.cpp(127): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
   Generating Code...
-     Creating library E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.lib and object E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exp
-sfml-main-d.lib(MainWin32.cpp.obj) : warning LNK4099: PDB 'vc140.pdb' was not found with 'sfml-main-d.lib(MainWin32.cpp.obj)' or at 'E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\bin\Debug_x86\vc140.pdb'; linking object as if no debug info
-  ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
-  ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.pdb (Full PDB)
+  Skipping... (no relevant changes detected)
+  utils.cpp
+  TitleScene.cpp
+  ClientSFML.vcxproj -> C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
