@@ -1,6 +1,4 @@
-﻿  GameScene.cpp
-c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\gamescene.cpp(72): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\gamescene.cpp(127): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+﻿  NetworkManager.cpp
   Generating Code...
   Skipping... (no relevant changes detected)
   utils.cpp

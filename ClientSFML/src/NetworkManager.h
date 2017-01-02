@@ -27,6 +27,7 @@ public:
 	~NetworkManager();
 
 	bool connectToServer(int onPort, int bufferSize);
+	void disconnectFromServer();
 	void sendUdp(const std::string& msg);
 	void sendTcp(const std::string& msg);
 

@@ -20,81 +20,298 @@ LobbyScene::~LobbyScene()
 
 void LobbyScene::HandleInput(int k, int a)
 {
-	// Move up through menu
-	if ((k == sf::Keyboard::W || k == sf::Keyboard::Up) && a == RELEASE)
+	if (a == RELEASE)
 	{
-	}
-
-	// Move down through menu
-	if ((k == sf::Keyboard::S || k == sf::Keyboard::Down) && a == RELEASE)
-	{
-	}
-
-	// Cancel
-	if ((k == CANCEL_BUTTON) && a == RELEASE)
-	{
-	}
-
-	// Confirm selection
-	if ((k == CONFIRM_BUTTON) && a == RELEASE)
-	{
-		// Hardcode for now . But should be stored in message manaher
-		std::string name = "alex" + util::to_str(rando::RandomRange(0, 32657));
-
-		auto nm = NetworkManager::Instance();
-
-		if (!nm->connected())
+		if (m_InputtingName)
 		{
-			if (!nm->connectToServer(TCP_PORT, 35))
+			// Quit
+			if ((k == sf::Keyboard::Return) && a == RELEASE)
 			{
-				// TODO LOG
-				return;
+				m_InputtingName = false;
+			}
+			// Delete Letter
+			else if (k == sf::Keyboard::BackSpace && a == RELEASE)
+			{
+				m_UserName.pop_back();
+			}
+			else if(k == sf::Keyboard::Delete && a == RELEASE)
+			{
+				m_UserName.clear();
+			}
+			// Enter name
+			else
+			{
+				if (a == RELEASE)
+				{
+					if (k >= sf::Keyboard::A && k <= sf::Keyboard::Num9)
+					{
+						if (m_UserName.size() < 10)
+						{
+							m_UserName += KeyBindings::GetStringFromKey(k);
+						}
+						else
+						{
+							m_UserInfoStr = "Too many characters!";
+						}
+					}
+					else
+					{
+						m_UserInfoStr = "Invalid Key!";
+					}
+				}
+			}
+		}
+		else
+		{
+			// Move up through menu
+			if ((k == sf::Keyboard::Up || k == sf::Keyboard::W))
+			{
+				if (m_MenuState != Pending)
+				{
+					//SoundPlayer::Instance()->PlayASound(ID::Audio::UI_Select);
+					int selopt = (int)m_Options;
+					--selopt;
+					m_Options = (LobbyOptions)selopt;
+
+					if (m_Options < LobbyOptions::CreateAccount)
+						m_Options = LobbyOptions::Return;
+				}
 			}
 
-			m_UserInfoStr = "Press Space When Ready to Start Game";
+			if ((k == sf::Keyboard::S || k == sf::Keyboard::Down))
+			{
+				if (m_MenuState != Pending)
+				{
+					//SoundPlayer::Instance()->PlayASound(ID::Audio::UI_Select);
+					int selopt = (int)m_Options;
+					++selopt;
+					m_Options = (LobbyOptions)selopt;
+					if (m_Options > LobbyOptions::Return)
+						m_Options = LobbyOptions::CreateAccount;
+				}
+			}
+
+			// Cancel
+			if (k == CANCEL_BUTTON)
+			{
+				if (m_MenuState == Pending)
+				{
+					//SoundPlayer::Instance()->PlayASound(ID::Audio::SelectSound);
+					m_MenuState = Normal;
+					m_UserInfoStr = "";
+				}
+			}
+
+			// Confirm selection
+			if (k == CONFIRM_BUTTON)
+			{
+				switch (m_Options)
+				{
+				case LobbyOptions::CreateAccount:
+					this->CreateUserAccount();
+					break;
+				case LobbyOptions::LoadOrCreateCredentials:
+					m_UserInfoStr = "Enter Name : [Return] finish : [BkSpc] delete : [Del] clear";
+					m_InputtingName = true;
+					break;
+				case LobbyOptions::Connect:
+					this->ConnectToServer();
+					break;
+				case LobbyOptions::StartGame:
+					this->AttemptToStartGame();
+					break;
+				case LobbyOptions::Return:
+					if (NetworkManager::Instance()->connected())
+					{
+						NetworkManager::Instance()->disconnectFromServer();
+					}
+					ChangeState(ID::States::Title);
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 
-	if ((k == sf::Keyboard::Space) && a == RELEASE)
+	/*
+	if (m_InputtingName)
 	{
-		NetworkManager* nm = NetworkManager::Instance();
-
-		// TODO : Would check other clients are ready to, possibly in thr client struct map
-		if (nm->connected())  //&& mm->Registerd() && mm->InMultiplayerMode())
+		if (k == sf::Keyboard::BackSpace && a == RELEASE)
 		{
+			m_UserName.clear();
+		}
+		else
+		{
+			if (a == RELEASE)
+			{
+				m_UserName += KeyBindings::GetStringFromKey(k);
+			}
+		}
+	}
+	else
+	{
+		// Move up through menu
+		if ((k == sf::Keyboard::W || k == sf::Keyboard::Up) && a == RELEASE)
+		{
+		}
+
+		// Move down through menu
+		if ((k == sf::Keyboard::S || k == sf::Keyboard::Down) && a == RELEASE)
+		{
+		}
+
+		// Cancel
+		if ((k == CANCEL_BUTTON) && a == RELEASE)
+		{
+		}
+
+		// Confirm selection
+		if ((k == CONFIRM_BUTTON) && a == RELEASE)
+		{
+			// Hardcode for now . But should be stored in message manaher
+			std::string name = "randname" + util::to_str(rando::RandomRange(0, 32657));
+
+			auto nm = NetworkManager::Instance();
+
+			if (!nm->connected())
+			{
+				if (!nm->connectToServer(TCP_PORT, 35))
+				{
+					// TODO LOG
+					return;
+				}
+
+				m_UserInfoStr = "Press Space When Ready to Start Game";
+			}
+		}
+
+		// Start Game
+		if ((k == sf::Keyboard::Space) && a == RELEASE)
+		{
+			NetworkManager* nm = NetworkManager::Instance();
+
+			// TODO : Would check other clients are ready to, possibly in thr client struct map
+			if (nm->connected())  //&& mm->Registerd() && mm->InMultiplayerMode())
+			{
+				//	int levelToLoad = 0;
+				//	EventManager::Instance()->SendEvent(events::GameEventID::SetLevelToLoad, &levelToLoad);
+
+					// We need to load the level here and then tell server so we get all the correct indices
+				ChangeState(ID::States::Game);
+
+				// Send TCP to start game
+				rapidjson::StringBuffer g_sBuffer;
+				rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
+
+				g_Writer.StartObject();
+				g_Writer.Key("name");
+				g_Writer.Int((int)Packet::ID::OUT_TCP_StartGame);
+				g_Writer.Key("id");
+				g_Writer.Uint(NetworkManager::Instance()->clientId());
+				g_Writer.EndObject();
+
+				NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+
+				//if (!nm->connectToServer(TCP_PORT, 35))
+				//{
+					// TODO LOG
+				//	return;
+				//}
+			}
+		}
+	}
+
+	// Star Entering name
+	if ((k == sf::Keyboard::Return) && a == RELEASE)
+	{
+		if (!m_InputtingName)
+		{
+			m_InputtingName = true;
+			m_FinishedInputtingName = false;
+		}
+		else
+		{
+			m_InputtingName = false;
+			m_FinishedInputtingName = true;
+		}
+	}
+	*/
+}
+
+void LobbyScene::CreateUserAccount()
+{
+	if (m_UserName == "" || m_UserName.empty())
+	{
+		m_UserInfoStr = "You need to create a user name first";
+	}
+	else
+	{
+		// Send data to server
+		m_UserInfoStr = "You have created an account";
+	}
+}
+
+void LobbyScene::ConnectToServer()
+{
+	auto nm = NetworkManager::Instance();
+
+	if (!nm->connected())
+	{
+		if (!nm->connectToServer(TCP_PORT, 35))
+		{
+			m_UserInfoStr = "Failed to connect to server";
+			// TODO LOG
+			return;
+		}
+
+		m_UserInfoStr = "Press Space When Ready to Start Game";
+	}
+}
+
+void LobbyScene::AttemptToStartGame()
+{
+	NetworkManager* nm = NetworkManager::Instance();
+
+	if (nm->connected())
+	{
 		//	int levelToLoad = 0;
 		//	EventManager::Instance()->SendEvent(events::GameEventID::SetLevelToLoad, &levelToLoad);
-			
-			// We need to load the level here and then tell server so we get all the correct indices
-			ChangeState(ID::States::Game);
-			
-			// Send TCP to start game
-			rapidjson::StringBuffer g_sBuffer;
-			rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
 
-			g_Writer.StartObject();
-			g_Writer.Key("name");
-			g_Writer.Int((int)Packet::ID::OUT_TCP_StartGame);
-			g_Writer.Key("id");
-			g_Writer.Uint(NetworkManager::Instance()->clientId());
-			g_Writer.EndObject();
+		// TODO * we should only do this once we have the rcv packet
+		ChangeState(ID::States::Game);
 
-			NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+		// Send TCP to start game
+		rapidjson::StringBuffer g_sBuffer;
+		rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
 
-			//if (!nm->connectToServer(TCP_PORT, 35))
-			//{
-				// TODO LOG
-			//	return;
-			//}
-		}
+		g_Writer.StartObject();
+		g_Writer.Key("name");
+		g_Writer.Int((int)Packet::ID::OUT_TCP_StartGame);
+		g_Writer.Key("id");
+		g_Writer.Uint(NetworkManager::Instance()->clientId());
+		g_Writer.EndObject();
+
+		NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+	}
+	else
+	{
+		m_UserInfoStr = "Failed, no server connection";
 	}
 }
 
 bool LobbyScene::OnCreate(Context* context)
 {
 	m_context = context;
-	m_ConfigOptions.resize(4);
-	m_UserInfoStr = "Press [" + KeyBindings::GetStringFromKey(CONFIRM_BUTTON) + "] to connect";
+	
+	//m_ConfigOptions.resize(4);
+	//m_UserInfoStr = "Press Enter to type login details";
+
+	m_OptionStrings[0] = "Create Account";
+	m_OptionStrings[1] = "Load or Create Credentials";
+	m_OptionStrings[2] = "Connect";
+	m_OptionStrings[3] = "Start Game";
+	m_OptionStrings[4] = "Return";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
@@ -108,6 +325,7 @@ void LobbyScene::OnEntry()
 {
 	CONFIRM_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::UseItemBind].key;
 	CANCEL_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::InteractItemBind].key;
+	m_MenuState = Normal;
 }
 
 bool LobbyScene::OnUpdate(const sf::Time& dt)
@@ -118,58 +336,65 @@ bool LobbyScene::OnUpdate(const sf::Time& dt)
 void LobbyScene::OnRender()
 {
 	const auto& time_now = Application::Instance()->TotalGameTime();
+	const Vec2& vs = m_context->view->getSize();
 
 	const float sinx = sinf(time_now) * 0.005f;
 	const float cosy = cosf(time_now) * 0.005f;
-	const sf::Color white = sf::Color::White;
 	const float screenW = (float)Screen::Instance()->ScreenWidth();
 	const float screenH = (float)Screen::Instance()->ScreenHeight();
-	const Vec2& vs = m_context->view->getSize();
-
 	float offset = -vs.y * 0.05f;
 
 	// Title
 	m_TextObject->setCharacterSize(32);
-	Screen::RenderText(m_context->window, m_TextObject, "Lobby", Vec2(vs.x * 0.5f, vs.y * 0.2f), Screen::AlignCentre);
+	Screen::RenderText(m_context->window, m_TextObject, "Lobby", Vec2(vs.x * 0.5f, vs.y * 0.1f), Screen::AlignCentre, 0, sf::Color::Red);
 
 	// Server Info
 	NetworkManager* netMan = NetworkManager::Instance();
-	if (netMan)
+	
+	m_TextObject->setCharacterSize(18);
+	for (int i = 0; i < LobbyOptions::NumLobbyOptions; ++i)
 	{
-		m_ConfigOptions[ServerInfo::CurrentIP] = "IP Address: " + netMan->m_ServerIPAddr;
-		m_ConfigOptions[ServerInfo::Connected] = "Connected to server: " + util::bool_to_str(netMan->connected());
-		m_ConfigOptions[ServerInfo::Registered] = "Registerd with server: " + util::bool_to_str(netMan->m_Connected);//TODO
-		m_ConfigOptions[ServerInfo::NumPlayersOnline] = "Other Players Online: ";
+		// Move the selected one and change it's colour
+		bool cs = (i == (int)m_Options);
+
+		Screen::RenderText(m_context->window, m_TextObject,
+			m_OptionStrings[i],
+			Vec2(cs ? (vs.x * 0.2f) + sinx : vs.x * 0.2f, cs ? (vs.y * 0.5f) + offset + cosy : (vs.y * 0.5f) + offset),
+			Screen::AlignLeft,
+			sf::Text::Style::Regular,
+			cs ? sf::Color::White : sf::Color(128, 128, 128, 255)
+			);
+
+		offset += (vs.y * 0.05f);
 	}
 
-	float cy = 0.8f;
-	/*
-	// TODO : Store our name and render it
-	m_Window->RenderText("Other Players", 0.0, cy, 1.0f, FontAlign::Centre);
-	// Render other clients on server
-	auto clients = msgMan->GetClients();
-	for (auto c = clients.begin(); c != clients.end(); ++c)
+	if (netMan)
 	{
-		cy -= 0.1f;
-		m_Window->RenderText(c->first, 0.0, cy, 1.0f, FontAlign::Centre);
+		m_ServerInfoStrings[ServerInfo::CurrentIP] = "Server IP: " + netMan->m_ServerIPAddr;
+		m_ServerInfoStrings[ServerInfo::Connected] = "Connected to server: " + util::bool_to_str(netMan->connected());
+		m_ServerInfoStrings[ServerInfo::UserName] = "UserName: " + m_UserName;
 	}
-	*/
+
+
+	offset = -vs.y * 0.05f;
 
 	// Render Selectable text options
 	for (int i = 0; i < ServerInfo::ServerInfoSize; ++i)
 	{
 		Screen::RenderText(m_context->window,
 			m_TextObject,
-			m_ConfigOptions[i],
-			Vec2(vs.x * 0.5f, vs.y * 0.5f + offset),
-			Screen::AlignCentre
+			m_ServerInfoStrings[i],
+			Vec2(vs.x * 0.8f, vs.y * 0.5f + offset),
+			Screen::AlignRight,
+			0,
+			sf::Color::Blue
 		);
 
 		offset += (vs.y * 0.05f);
 	}
 
 	// Other info
-	Screen::RenderText(m_context->window, m_TextObject, m_UserInfoStr, Vec2(vs.x * 0.5f, vs.y * 0.4f), Screen::AlignCentre);
+	Screen::RenderText(m_context->window, m_TextObject, m_UserInfoStr, Vec2(vs.x * 0.5f, vs.y * 0.3f), Screen::AlignCentre, 0, sf::Color::Green);
 	Screen::RenderText(m_context->window, m_TextObject, "[" + KeyBindings::GetStringFromKey(CONFIRM_BUTTON) + "] to make selection", Vec2(vs.x * 0.5f, vs.y * 0.8f), Screen::AlignCentre);
 }
 

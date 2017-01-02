@@ -7,12 +7,21 @@
 
 class LobbyScene : public IScene
 {
+	enum LobbyOptions
+	{
+		CreateAccount,				// For new client when entered creds
+		LoadOrCreateCredentials,	// Write or load bin
+		Connect,					// Connect to server with creds
+		StartGame,					// Start a game after connect
+		Return,
+		NumLobbyOptions,
+	};
+
 	enum ServerInfo
 	{
 		CurrentIP,
 		Connected,
-		Registered,
-		NumPlayersOnline,
+		UserName,
 		ServerInfoSize
 	};
 
@@ -30,13 +39,26 @@ public:
 	void HandleInput(int k, int a) override;
 
 private:
-	std::vector<std::string> m_ConfigOptions;
+	void CreateUserAccount();
+	void ConnectToServer();
+	void AttemptToStartGame();
 
+private:
 	sf::Text* m_TextObject;
 
+	std::string m_OptionStrings[5];
+	std::string m_ServerInfoStrings[3];
+
 	std::string m_UserInfoStr;
+	std::string m_UserName = "";
+	
+	LobbyOptions m_Options = LobbyOptions::CreateAccount;
+	MenuState m_MenuState = MenuState::Normal;
+
 	int CONFIRM_BUTTON;
 	int CANCEL_BUTTON;
+
+	bool m_InputtingName = false;
 };
 
 #endif

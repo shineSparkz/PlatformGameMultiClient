@@ -54,6 +54,9 @@ void GameScene::HandleEvent(Event* event_)
 				Vec2 statePos = ns->position;
 				size_t obj_id = (size_t)ns->object_handle;
 
+				if (obj_id >= m_GameObjects.size())
+					return;
+
 				Vec2 diff = statePos - m_GameObjects[obj_id]->m_Sprite.getPosition();	
 				float dist = Maths::Length(diff);
 

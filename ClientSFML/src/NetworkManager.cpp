@@ -30,8 +30,6 @@ void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 
 		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
-
-	sock->unbind();
 }
 
 void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, const std::string& ipAddr, int port)
@@ -144,25 +142,15 @@ NetworkManager::~NetworkManager()
 {
 	SAFE_DELETE(m_MsgParser);
 
-	// May need to close sockets
-	SAFE_DELETE(m_UdpRcvBuffer);
-	SAFE_DELETE(m_UdpSndBuffer);
-	SAFE_DELETE(m_TcpSndBuffer);
-	SAFE_DELETE(m_TcpRcvBuffer);
-
-	SAFE_DELETE(m_UdpRcvThread);
-	SAFE_DELETE(m_UdpSndThread);
-	SAFE_DELETE(m_TcpRcvThread);
-	SAFE_DELETE(m_TcpSndThread);
-
-	SAFE_DELETE(m_TcpSock);
-	SAFE_DELETE(m_UdpSock);
+	this->disconnectFromServer();
 }
 
 bool NetworkManager::connectToServer(int onPort, int buffSize)
 {
 	if (!m_TcpSock)
 	{
+		m_Quit = false;
+
 		// Look for broadcast
 		int broadcast_port = 8081;
 		sf::UdpSocket broadcast_socket;
@@ -176,17 +164,34 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 		memset(&buff, 0, 32);
 		memset(&rcv_buff, 0, 32);
 
-		//broadcast_socket.send(buff, 32, "255.255.255.255", broadcast_port);
-		broadcast_socket.send(buff, 32, "192.168.0.255", broadcast_port);
-		// TODO : Bail if that doesn't work
-		
-		sf::Socket::Status broadcast_status = broadcast_socket.receive(&rcv_buff, 32, received_bytes, remote_ip, remote_port);
-		if (broadcast_status != sf::Socket::Status::Done)
+		sf::Socket::Status broadCastStatus = 
+			broadcast_socket.send(buff, 32, "192.168.0.255", broadcast_port);
+
+		if (broadCastStatus != sf::Socket::Status::Done)
 		{
-			// Error
-			WRITE_LOG("Could not resolve server address", "error");
+			// TODO Log
 			return false;
 		}
+		
+		broadcast_socket.setBlocking(false);
+
+		// Attempt to connect for a few seconds
+		float t = 0.0f;
+		bool connectedToBcast = false;
+		while (t < 5.0f)
+		{
+			sf::Socket::Status broadcast_status = broadcast_socket.receive(&rcv_buff, 32, received_bytes, remote_ip, remote_port);
+			if (broadcast_status == sf::Socket::Status::Done)
+			{
+				connectedToBcast = true;
+				break;
+			}
+
+			t += 0.001f;
+		}
+
+		if (!connectedToBcast)
+			return false;
 
 		std::string server_address = remote_ip.toString();
 		
@@ -273,6 +278,42 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 		// TODO : Log
 		return false;
 	}
+}
+
+void NetworkManager::disconnectFromServer()
+{
+	m_Quit = true;	// Close all threads
+	m_Connected = false;
+	m_LocalUdpPort = -1;
+	m_ServerUdpPort = -1;
+	m_ClientId = -1;
+	m_BoundedBuffSize = -1;
+	m_PlayerHandle = -1;
+	m_ServerIPAddr.clear();
+
+	// Need to wait until all threads are done here
+
+	if (m_TcpSock)
+	{
+		m_TcpSock->disconnect();
+	}
+
+	if (m_UdpSock)
+	{
+		m_UdpSock->unbind();
+	}
+
+	SAFE_DELETE(m_TcpSock);
+	SAFE_DELETE(m_UdpSock);
+	SAFE_DELETE(m_UdpRcvBuffer);
+	SAFE_DELETE(m_UdpSndBuffer);
+	SAFE_DELETE(m_TcpSndBuffer);
+	SAFE_DELETE(m_TcpRcvBuffer);
+
+	SAFE_DELETE(m_UdpRcvThread);
+	SAFE_DELETE(m_UdpSndThread);
+	SAFE_DELETE(m_TcpRcvThread);
+	SAFE_DELETE(m_TcpSndThread);
 }
 
 void NetworkManager::sendUdp(const std::string& msg)
