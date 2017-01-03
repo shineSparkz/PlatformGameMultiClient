@@ -71,8 +71,11 @@ void GameScene::HandleEvent(Event* event_)
 						m_GameObjects[obj_id]->m_Sprite.setPosition(m_GameObjects[obj_id]->m_Sprite.getPosition() +( diff * 0.1f));
 					}
 
-					m_GameObjects[obj_id]->m_Sprite.setTextureRect(Rect(ns->frameX * m_GameObjects[obj_id]->m_FrameSizeX,
-						ns->frameY * m_GameObjects[obj_id]->m_FrameSizeY, m_GameObjects[obj_id]->m_FrameSizeX, m_GameObjects[obj_id]->m_FrameSizeY));
+					m_GameObjects[obj_id]->m_Sprite.setTextureRect(Rect(
+						static_cast<int>(ns->frameX * m_GameObjects[obj_id]->m_FrameSizeX),
+						static_cast<int>(ns->frameY * m_GameObjects[obj_id]->m_FrameSizeY),
+						static_cast<int>(m_GameObjects[obj_id]->m_FrameSizeX),
+						static_cast<int>(m_GameObjects[obj_id]->m_FrameSizeY)));
 				}
 			}
 		}
@@ -127,7 +130,7 @@ bool GameScene::OnCreate(Context* const con)
 	sf::Sprite espr;
 	espr.setPosition(Vec2(200, 200));
 	espr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::BlueMinionEnemy));
-	espr.setTextureRect(sf::IntRect(0, 0, enemy->m_FrameSizeX, enemy->m_FrameSizeY));
+	espr.setTextureRect(sf::IntRect(0, 0, (int)enemy->m_FrameSizeX, (int)enemy->m_FrameSizeY));
 	enemy->m_Sprite = espr;
 	m_GameObjects.push_back(enemy);
 

@@ -18,6 +18,23 @@ LobbyScene::~LobbyScene()
 {
 }
 
+void LobbyScene::HandleEvent(Event* ev)
+{
+	switch (ev->GetID())
+	{
+	case EventID::Net_StartGameCallback:
+	{
+		ChangeState(ID::States::Game);
+	}
+	break;
+	case EventID::Net_ServerMsgCallback:
+		m_UserInfoStr = *(std::string*)ev->GetData();
+		break;
+	default:
+		break;
+	}
+}
+
 void LobbyScene::HandleInput(int k, int a)
 {
 	if (a == RELEASE)
@@ -27,6 +44,7 @@ void LobbyScene::HandleInput(int k, int a)
 			// Quit
 			if ((k == sf::Keyboard::Return) && a == RELEASE)
 			{
+				m_UserInfoStr = "Select Option";
 				m_InputtingName = false;
 			}
 			// Delete Letter
@@ -73,7 +91,7 @@ void LobbyScene::HandleInput(int k, int a)
 					--selopt;
 					m_Options = (LobbyOptions)selopt;
 
-					if (m_Options < LobbyOptions::CreateAccount)
+					if (m_Options < LobbyOptions::Connect)
 						m_Options = LobbyOptions::Return;
 				}
 			}
@@ -87,7 +105,7 @@ void LobbyScene::HandleInput(int k, int a)
 					++selopt;
 					m_Options = (LobbyOptions)selopt;
 					if (m_Options > LobbyOptions::Return)
-						m_Options = LobbyOptions::CreateAccount;
+						m_Options = LobbyOptions::Connect;
 				}
 			}
 
@@ -107,15 +125,18 @@ void LobbyScene::HandleInput(int k, int a)
 			{
 				switch (m_Options)
 				{
-				case LobbyOptions::CreateAccount:
-					this->CreateUserAccount();
+				case LobbyOptions::Connect:
+					this->ConnectToServer();
 					break;
 				case LobbyOptions::LoadOrCreateCredentials:
 					m_UserInfoStr = "Enter Name : [Return] finish : [BkSpc] delete : [Del] clear";
 					m_InputtingName = true;
 					break;
-				case LobbyOptions::Connect:
-					this->ConnectToServer();
+				case LobbyOptions::CreateAccount:
+					this->CreateUserAccount();
+					break;
+				case LobbyOptions::Login:
+					this->LoginToServer();
 					break;
 				case LobbyOptions::StartGame:
 					this->AttemptToStartGame();
@@ -133,122 +154,79 @@ void LobbyScene::HandleInput(int k, int a)
 			}
 		}
 	}
-
-	/*
-	if (m_InputtingName)
-	{
-		if (k == sf::Keyboard::BackSpace && a == RELEASE)
-		{
-			m_UserName.clear();
-		}
-		else
-		{
-			if (a == RELEASE)
-			{
-				m_UserName += KeyBindings::GetStringFromKey(k);
-			}
-		}
-	}
-	else
-	{
-		// Move up through menu
-		if ((k == sf::Keyboard::W || k == sf::Keyboard::Up) && a == RELEASE)
-		{
-		}
-
-		// Move down through menu
-		if ((k == sf::Keyboard::S || k == sf::Keyboard::Down) && a == RELEASE)
-		{
-		}
-
-		// Cancel
-		if ((k == CANCEL_BUTTON) && a == RELEASE)
-		{
-		}
-
-		// Confirm selection
-		if ((k == CONFIRM_BUTTON) && a == RELEASE)
-		{
-			// Hardcode for now . But should be stored in message manaher
-			std::string name = "randname" + util::to_str(rando::RandomRange(0, 32657));
-
-			auto nm = NetworkManager::Instance();
-
-			if (!nm->connected())
-			{
-				if (!nm->connectToServer(TCP_PORT, 35))
-				{
-					// TODO LOG
-					return;
-				}
-
-				m_UserInfoStr = "Press Space When Ready to Start Game";
-			}
-		}
-
-		// Start Game
-		if ((k == sf::Keyboard::Space) && a == RELEASE)
-		{
-			NetworkManager* nm = NetworkManager::Instance();
-
-			// TODO : Would check other clients are ready to, possibly in thr client struct map
-			if (nm->connected())  //&& mm->Registerd() && mm->InMultiplayerMode())
-			{
-				//	int levelToLoad = 0;
-				//	EventManager::Instance()->SendEvent(events::GameEventID::SetLevelToLoad, &levelToLoad);
-
-					// We need to load the level here and then tell server so we get all the correct indices
-				ChangeState(ID::States::Game);
-
-				// Send TCP to start game
-				rapidjson::StringBuffer g_sBuffer;
-				rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
-
-				g_Writer.StartObject();
-				g_Writer.Key("name");
-				g_Writer.Int((int)Packet::ID::OUT_TCP_StartGame);
-				g_Writer.Key("id");
-				g_Writer.Uint(NetworkManager::Instance()->clientId());
-				g_Writer.EndObject();
-
-				NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
-
-				//if (!nm->connectToServer(TCP_PORT, 35))
-				//{
-					// TODO LOG
-				//	return;
-				//}
-			}
-		}
-	}
-
-	// Star Entering name
-	if ((k == sf::Keyboard::Return) && a == RELEASE)
-	{
-		if (!m_InputtingName)
-		{
-			m_InputtingName = true;
-			m_FinishedInputtingName = false;
-		}
-		else
-		{
-			m_InputtingName = false;
-			m_FinishedInputtingName = true;
-		}
-	}
-	*/
 }
 
 void LobbyScene::CreateUserAccount()
 {
 	if (m_UserName == "" || m_UserName.empty())
 	{
-		m_UserInfoStr = "You need to create a user name first";
+		m_UserInfoStr = "You need to create or load user name first";
 	}
 	else
 	{
-		// Send data to server
-		m_UserInfoStr = "You have created an account";
+		NetworkManager* nm = NetworkManager::Instance();
+
+		if (nm->connected())
+		{
+			// Send data to server
+			m_UserInfoStr = "Attempting to create account with server......";
+
+			// Send TCP to create account with the string they have entered
+			rapidjson::StringBuffer g_sBuffer;
+			rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
+
+			g_Writer.StartObject();
+			g_Writer.Key("name");
+			g_Writer.Int((int)Packet::ID::OUT_TCP_CreateAccount);
+			g_Writer.Key("userName");
+			g_Writer.String(m_UserName.c_str());
+			g_Writer.Key("id");
+			g_Writer.Uint(NetworkManager::Instance()->clientId());
+			g_Writer.EndObject();
+
+			NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+		}
+		else
+		{
+			m_UserInfoStr = "Not Connected to a server";
+		}
+	}
+}
+
+void LobbyScene::LoginToServer()
+{
+	if (m_UserName == "" || m_UserName.empty())
+	{
+		m_UserInfoStr = "You need to create or load user name first";
+	}
+	else
+	{
+		NetworkManager* nm = NetworkManager::Instance();
+
+		if (nm->connected())
+		{
+			// Send data to server
+			m_UserInfoStr = "Attempting to connect to server......";
+
+			// Send TCP to create account with the string they have entered
+			rapidjson::StringBuffer g_sBuffer;
+			rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
+
+			g_Writer.StartObject();
+			g_Writer.Key("name");
+			g_Writer.Int((int)Packet::ID::OUT_TCP_Login);
+			g_Writer.Key("userName");
+			g_Writer.String(m_UserName.c_str());
+			g_Writer.Key("id");
+			g_Writer.Uint(NetworkManager::Instance()->clientId());
+			g_Writer.EndObject();
+
+			NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+		}
+		else
+		{
+			m_UserInfoStr = "Not Connected to a server";
+		}
 	}
 }
 
@@ -272,14 +250,13 @@ void LobbyScene::ConnectToServer()
 void LobbyScene::AttemptToStartGame()
 {
 	NetworkManager* nm = NetworkManager::Instance();
-
 	if (nm->connected())
 	{
 		//	int levelToLoad = 0;
 		//	EventManager::Instance()->SendEvent(events::GameEventID::SetLevelToLoad, &levelToLoad);
 
 		// TODO * we should only do this once we have the rcv packet
-		ChangeState(ID::States::Game);
+		//ChangeState(ID::States::Game);
 
 		// Send TCP to start game
 		rapidjson::StringBuffer g_sBuffer;
@@ -298,20 +275,26 @@ void LobbyScene::AttemptToStartGame()
 	{
 		m_UserInfoStr = "Failed, no server connection";
 	}
+	
 }
 
-bool LobbyScene::OnCreate(Context* context)
+bool LobbyScene::OnCreate(Context* const context)
 {
 	m_context = context;
+
+	AttachEvent(EventID::Net_StartGameCallback, *this);
+	AttachEvent(EventID::Net_ServerMsgCallback, *this);
+
 	
 	//m_ConfigOptions.resize(4);
 	//m_UserInfoStr = "Press Enter to type login details";
 
-	m_OptionStrings[0] = "Create Account";
+	m_OptionStrings[0] = "Connect to Server";
 	m_OptionStrings[1] = "Load or Create Credentials";
-	m_OptionStrings[2] = "Connect";
-	m_OptionStrings[3] = "Start Game";
-	m_OptionStrings[4] = "Return";
+	m_OptionStrings[2] = "Create Account";
+	m_OptionStrings[3] = "Login to Server";
+	m_OptionStrings[4] = "Start Game";
+	m_OptionStrings[5] = "Return";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
@@ -323,6 +306,7 @@ bool LobbyScene::OnCreate(Context* context)
 
 void LobbyScene::OnEntry()
 {
+	m_UserInfoStr = "Select Option";
 	CONFIRM_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::UseItemBind].key;
 	CANCEL_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::InteractItemBind].key;
 	m_MenuState = Normal;
@@ -375,7 +359,6 @@ void LobbyScene::OnRender()
 		m_ServerInfoStrings[ServerInfo::UserName] = "UserName: " + m_UserName;
 	}
 
-
 	offset = -vs.y * 0.05f;
 
 	// Render Selectable text options
@@ -404,5 +387,7 @@ void LobbyScene::OnExit(ID::States nextState)
 
 void LobbyScene::Close()
 {
+	DetachEvent(EventID::Net_StartGameCallback, *this);
+	DetachEvent(EventID::Net_ServerMsgCallback, *this);
 	SAFE_DELETE(m_TextObject);
 }

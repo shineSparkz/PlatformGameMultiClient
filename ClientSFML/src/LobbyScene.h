@@ -4,14 +4,16 @@
 #include "IScene.h"
 #include <vector>
 #include <string>
+#include "EventHandler.h"
 
-class LobbyScene : public IScene
+class LobbyScene : public IScene, public EventHandler
 {
 	enum LobbyOptions
 	{
-		CreateAccount,				// For new client when entered creds
-		LoadOrCreateCredentials,	// Write or load bin
 		Connect,					// Connect to server with creds
+		LoadOrCreateCredentials,	// Write or load bin
+		CreateAccount,				// For new client when entered creds
+		Login,
 		StartGame,					// Start a game after connect
 		Return,
 		NumLobbyOptions,
@@ -29,7 +31,9 @@ public:
 	LobbyScene();
 	virtual ~LobbyScene();
 
-	bool OnCreate(Context* context) override;
+	void HandleEvent(Event* ev) override;
+
+	bool OnCreate(Context* const context) override;
 	void OnEntry() override;
 	bool OnUpdate(const sf::Time& dt) override;
 	void OnRender() override;
@@ -39,14 +43,15 @@ public:
 	void HandleInput(int k, int a) override;
 
 private:
-	void CreateUserAccount();
 	void ConnectToServer();
+	void CreateUserAccount();
+	void LoginToServer();
 	void AttemptToStartGame();
 
 private:
 	sf::Text* m_TextObject;
 
-	std::string m_OptionStrings[5];
+	std::string m_OptionStrings[6];
 	std::string m_ServerInfoStrings[3];
 
 	std::string m_UserInfoStr;

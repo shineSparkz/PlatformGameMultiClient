@@ -5,6 +5,7 @@
 
 enum EventID
 {
+	// Gameplay
 	FinishLevel,
 	PlayerDead,
 	SetLevelToLoad,
@@ -17,6 +18,10 @@ enum EventID
 	SaveGameData,
 	LoadGameData,
 	LoadGameDefaults,
+
+	// Network accounts
+	Net_StartGameCallback,
+	Net_ServerMsgCallback,
 
 	// Network
 	Net_NewGameObject,

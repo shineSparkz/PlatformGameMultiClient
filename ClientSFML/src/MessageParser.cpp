@@ -10,8 +10,10 @@
 
 bool MessageParser::Init()
 {
-	m_MsgMap[Packet::ID::IN_TCP_Register] = MessageParser::tcp_register;
-	m_MsgMap[Packet::ID::IN_TCP_NewPlayerObject] = MessageParser::tcp_new_player;
+	m_MsgMap[Packet::ID::IN_TCP_Connect] = MessageParser::tcp_connect;
+	m_MsgMap[Packet::ID::IN_TCP_ServerMsg] = MessageParser::tcp_server_msg;
+	m_MsgMap[Packet::ID::IN_TCP_StartGame] = MessageParser::tcp_start_game;
+
 	m_MsgMap[Packet::ID::IN_UDP_UpdatedObject] = MessageParser::udp_update_object;
 	//... etc
 
@@ -38,7 +40,7 @@ void MessageParser::Parse(const rapidjson::Document& jd)
 }
 
 
-void MessageParser::tcp_register(const rapidjson::Document& jd)
+void MessageParser::tcp_connect(const rapidjson::Document& jd)
 {
 	// Reg
 	NetworkManager::Instance()->m_ClientId = jd["clientId"].GetInt();
@@ -48,14 +50,67 @@ void MessageParser::tcp_register(const rapidjson::Document& jd)
 	NetworkManager::Instance()->m_UdpSndBuffer->Deposit(std::to_string(NetworkManager::Instance()->m_ClientId) + ":UDP:0");
 }
 
-void MessageParser::tcp_new_player(const rapidjson::Document& jd)
+void MessageParser::tcp_server_msg(const rapidjson::Document& jd)
 {
+	// This is actualy only a call back for a failed start game, for sucess we just load the map and inform the lobby
+	std::string msg = "Error";
+	bool success = false;
+
+	if (jd.IsObject())
+	{
+		if (jd.HasMember("msg"))
+		{
+			if (jd["msg"].IsString())
+			{
+				msg = jd["msg"].GetString();
+			}
+		}
+
+		if (jd.HasMember("success"))
+		{
+			if (jd["success"].IsBool())
+			{
+				success = jd["success"].GetBool();
+			}
+			else if (jd["success"].IsInt())
+			{
+				success = (jd["success"].GetInt() == 1);
+			}
+		}
+	}
+
+	// Inform lobby on net manager
+	SendEvent(EventID::Net_ServerMsgCallback, &msg);
+}
+
+void MessageParser::tcp_start_game(const rapidjson::Document& jd)
+{
+	bool loadLevel = false;
+
+	if (jd.HasMember("loadLevel"))
+	{
+		if (jd["loadLevel"].IsBool())
+		{
+			loadLevel = jd["loadLevel"].GetBool();
+		}
+		else if (jd["loadLevel"].IsInt())
+		{
+			loadLevel = jd["loadLevel"].GetInt() == 1;
+		}
+	}
+
 	// Get Array of objects (could be one)
 	if (jd.HasMember("objects"))
 	{
 		if (jd["objects"].IsArray())
 		{
 			auto client_array = jd["objects"].GetArray();
+
+			if (GetActiveState() == ID::States::Lobby && loadLevel)
+			{
+				// Tell Lobby to move to game state
+				SendEvent(EventID::Net_StartGameCallback, nullptr);
+			}
 
 			// Iterate player array
 			for (auto arr_it = client_array.Begin(); arr_it != client_array.End(); ++arr_it)

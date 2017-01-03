@@ -19,8 +19,10 @@ public:
 
 private:
 	// Functors
-	static void tcp_register(const rapidjson::Document& data);
-	static void tcp_new_player(const rapidjson::Document& msg);
+	static void tcp_connect(const rapidjson::Document& data);
+	static void tcp_server_msg(const rapidjson::Document& data);
+	static void tcp_start_game(const rapidjson::Document& data);
+
 	static void udp_update_object(const rapidjson::Document& data);
 
 private:
