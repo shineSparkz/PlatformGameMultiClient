@@ -1,5 +1,9 @@
 #include "src\Application.h"
 
+
+#include "src\PlayerCredentialsBin.h"
+#include <string>
+
 int main()
 
 {
@@ -8,6 +12,7 @@ int main()
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 	//---------------------
+
 	Application app;
 
 	if (!app.Init("Game Client"))
@@ -17,6 +22,7 @@ int main()
 	}
 
 	app.Run();
+	
 	return 0;
 }
 

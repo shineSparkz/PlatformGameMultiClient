@@ -67,6 +67,9 @@
     <ClCompile Include="src\MessageParser.cpp">
       <Filter>Network</Filter>
     </ClCompile>
+    <ClCompile Include="src\PlayerCredentialBin.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\BoundedBuffer.h">
@@ -145,6 +148,9 @@
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="src\MessageParser.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PlayerCredentialsBin.h">
       <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>

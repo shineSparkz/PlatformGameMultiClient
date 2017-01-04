@@ -7,6 +7,7 @@
 #include "EventManager.h"
 #include "utils.h"
 #include "NetworkManager.h"
+#include "PlayerCredentialsBin.h"
 
 LobbyScene::LobbyScene() :
 	IScene(),
@@ -50,7 +51,8 @@ void LobbyScene::HandleInput(int k, int a)
 			// Delete Letter
 			else if (k == sf::Keyboard::BackSpace && a == RELEASE)
 			{
-				m_UserName.pop_back();
+				if(!m_UserName.empty())
+					m_UserName.pop_back();
 			}
 			else if(k == sf::Keyboard::Delete && a == RELEASE)
 			{
@@ -63,9 +65,50 @@ void LobbyScene::HandleInput(int k, int a)
 				{
 					if (k >= sf::Keyboard::A && k <= sf::Keyboard::Num9)
 					{
-						if (m_UserName.size() < 10)
+						if (m_UserName.size() < MAX_NAME_CHARS)
 						{
 							m_UserName += KeyBindings::GetStringFromKey(k);
+						}
+						else
+						{
+							m_UserInfoStr = "Too many characters!";
+						}
+					}
+					else
+					{
+						m_UserInfoStr = "Invalid Key!";
+					}
+				}
+			}
+		}
+		else if (m_InputtingPassword)
+		{
+			// Quit
+			if ((k == sf::Keyboard::Return) && a == RELEASE)
+			{
+				m_UserInfoStr = "Select Option";
+				m_InputtingPassword = false;
+			}
+			// Delete Letter
+			else if (k == sf::Keyboard::BackSpace && a == RELEASE)
+			{
+				if(!m_PassWordName.empty())
+					m_PassWordName.pop_back();
+			}
+			else if (k == sf::Keyboard::Delete && a == RELEASE)
+			{
+				m_PassWordName.clear();
+			}
+			// Enter name
+			else
+			{
+				if (a == RELEASE)
+				{
+					if (k >= sf::Keyboard::A && k <= sf::Keyboard::Num9)
+					{
+						if (m_PassWordName.size() < MAX_NAME_CHARS)
+						{
+							m_PassWordName += KeyBindings::GetStringFromKey(k);
 						}
 						else
 						{
@@ -128,9 +171,13 @@ void LobbyScene::HandleInput(int k, int a)
 				case LobbyOptions::Connect:
 					this->ConnectToServer();
 					break;
-				case LobbyOptions::LoadOrCreateCredentials:
+				case LobbyOptions::EnterUserName:
 					m_UserInfoStr = "Enter Name : [Return] finish : [BkSpc] delete : [Del] clear";
 					m_InputtingName = true;
+					break;
+				case LobbyOptions::EnterPassword:
+					m_UserInfoStr = "Enter Password : [Return] finish : [BkSpc] delete : [Del] clear";
+					m_InputtingPassword = true;
 					break;
 				case LobbyOptions::CreateAccount:
 					this->CreateUserAccount();
@@ -180,6 +227,8 @@ void LobbyScene::CreateUserAccount()
 			g_Writer.Int((int)Packet::ID::OUT_TCP_CreateAccount);
 			g_Writer.Key("userName");
 			g_Writer.String(m_UserName.c_str());
+			g_Writer.Key("password");
+			g_Writer.String(m_PassWordName.c_str());
 			g_Writer.Key("id");
 			g_Writer.Uint(NetworkManager::Instance()->clientId());
 			g_Writer.EndObject();
@@ -188,7 +237,7 @@ void LobbyScene::CreateUserAccount()
 		}
 		else
 		{
-			m_UserInfoStr = "Not Connected to a server";
+			m_UserInfoStr = "Need server connection to create account";
 		}
 	}
 }
@@ -197,12 +246,17 @@ void LobbyScene::LoginToServer()
 {
 	if (m_UserName == "" || m_UserName.empty())
 	{
-		m_UserInfoStr = "You need to create or load user name first";
+		m_UserInfoStr = "You need to create username first";
+	}
+	else if (m_PassWordName == "" || m_PassWordName.empty())
+	{
+		m_UserInfoStr = "You need to create password first";
 	}
 	else
 	{
 		NetworkManager* nm = NetworkManager::Instance();
 
+		// TODO : Need to check if we already logged in
 		if (nm->connected())
 		{
 			// Send data to server
@@ -217,15 +271,20 @@ void LobbyScene::LoginToServer()
 			g_Writer.Int((int)Packet::ID::OUT_TCP_Login);
 			g_Writer.Key("userName");
 			g_Writer.String(m_UserName.c_str());
+			g_Writer.Key("password");
+			g_Writer.String(m_PassWordName.c_str());
 			g_Writer.Key("id");
 			g_Writer.Uint(NetworkManager::Instance()->clientId());
 			g_Writer.EndObject();
 
 			NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
+
+			// Save these credentials here everytime they try and log in
+			PlayerCredentialsFile::SaveFile(m_UserName.length(), m_UserName.c_str(), m_PassWordName.length(), m_PassWordName.c_str());
 		}
 		else
 		{
-			m_UserInfoStr = "Not Connected to a server";
+			m_UserInfoStr = "Need a server connection to login";
 		}
 	}
 }
@@ -252,12 +311,6 @@ void LobbyScene::AttemptToStartGame()
 	NetworkManager* nm = NetworkManager::Instance();
 	if (nm->connected())
 	{
-		//	int levelToLoad = 0;
-		//	EventManager::Instance()->SendEvent(events::GameEventID::SetLevelToLoad, &levelToLoad);
-
-		// TODO * we should only do this once we have the rcv packet
-		//ChangeState(ID::States::Game);
-
 		// Send TCP to start game
 		rapidjson::StringBuffer g_sBuffer;
 		rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
@@ -274,8 +327,7 @@ void LobbyScene::AttemptToStartGame()
 	else
 	{
 		m_UserInfoStr = "Failed, no server connection";
-	}
-	
+	}	
 }
 
 bool LobbyScene::OnCreate(Context* const context)
@@ -285,16 +337,16 @@ bool LobbyScene::OnCreate(Context* const context)
 	AttachEvent(EventID::Net_StartGameCallback, *this);
 	AttachEvent(EventID::Net_ServerMsgCallback, *this);
 
-	
 	//m_ConfigOptions.resize(4);
 	//m_UserInfoStr = "Press Enter to type login details";
 
 	m_OptionStrings[0] = "Connect to Server";
-	m_OptionStrings[1] = "Load or Create Credentials";
-	m_OptionStrings[2] = "Create Account";
-	m_OptionStrings[3] = "Login to Server";
-	m_OptionStrings[4] = "Start Game";
-	m_OptionStrings[5] = "Return";
+	m_OptionStrings[1] = "Enter User Name";
+	m_OptionStrings[2] = "Enter Password";
+	m_OptionStrings[3] = "Create Account";
+	m_OptionStrings[4] = "Login to Server";
+	m_OptionStrings[5] = "Start Game";
+	m_OptionStrings[6] = "Return";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
@@ -310,6 +362,17 @@ void LobbyScene::OnEntry()
 	CONFIRM_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::UseItemBind].key;
 	CANCEL_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::InteractItemBind].key;
 	m_MenuState = Normal;
+
+	// Attempt to load credentials file
+	PlayerCredentialsFile pcf;
+	PlayerCredentials* pc = pcf.LoadFile();
+	if (pc)
+	{
+		if (pc->name)
+			m_UserName = pc->name;
+		if (pc->password)
+			m_PassWordName = pc->password;
+	}
 }
 
 bool LobbyScene::OnUpdate(const sf::Time& dt)
@@ -357,6 +420,8 @@ void LobbyScene::OnRender()
 		m_ServerInfoStrings[ServerInfo::CurrentIP] = "Server IP: " + netMan->m_ServerIPAddr;
 		m_ServerInfoStrings[ServerInfo::Connected] = "Connected to server: " + util::bool_to_str(netMan->connected());
 		m_ServerInfoStrings[ServerInfo::UserName] = "UserName: " + m_UserName;
+		m_ServerInfoStrings[ServerInfo::Password] = "password: " + m_PassWordName;
+
 	}
 
 	offset = -vs.y * 0.05f;
