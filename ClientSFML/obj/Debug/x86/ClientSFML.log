@@ -1,6 +1,3 @@
-﻿  MessageParser.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  utils.cpp
-  TitleScene.cpp
-  ClientSFML.vcxproj -> C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
+﻿  GameScene.cpp
+  ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
+  ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.pdb (Full PDB)

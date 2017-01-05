@@ -26,6 +26,7 @@ class LobbyScene : public IScene, public EventHandler
 		Connected,
 		UserName,
 		Password,
+		Experience,
 		ServerInfoSize
 	};
 
@@ -54,7 +55,7 @@ private:
 	sf::Text* m_TextObject;
 
 	std::string m_OptionStrings[7];
-	std::string m_ServerInfoStrings[4];
+	std::string m_ServerInfoStrings[5];
 
 	std::string m_UserInfoStr;
 	std::string m_UserName = "";

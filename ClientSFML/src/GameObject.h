@@ -11,6 +11,7 @@ public:
 	int m_TypeId;
 	float m_FrameSizeX;
 	float m_FrameSizeY;
+	bool m_Active = true;
 };
 
 #endif

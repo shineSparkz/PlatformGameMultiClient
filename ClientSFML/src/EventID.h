@@ -5,6 +5,7 @@
 
 enum EventID
 {
+	/*
 	// Gameplay
 	FinishLevel,
 	PlayerDead,
@@ -18,6 +19,9 @@ enum EventID
 	SaveGameData,
 	LoadGameData,
 	LoadGameDefaults,
+	*/
+
+	LoadLevelData,
 
 	// Network accounts
 	Net_StartGameCallback,

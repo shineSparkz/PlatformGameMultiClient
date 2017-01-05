@@ -14,6 +14,8 @@ bool MessageParser::Init()
 	m_MsgMap[Packet::ID::IN_TCP_Connect] = MessageParser::tcp_connect;
 	m_MsgMap[Packet::ID::IN_TCP_ServerMsg] = MessageParser::tcp_server_msg;
 	m_MsgMap[Packet::ID::IN_TCP_StartGame] = MessageParser::tcp_start_game;
+	m_MsgMap[Packet::ID::IN_TCP_FinishLevel] = MessageParser::tcp_finish_level;
+	m_MsgMap[Packet::ID::IN_TCP_ExpQueery] = MessageParser::tcp_exp_queery;
 
 	m_MsgMap[Packet::ID::IN_UDP_UpdatedObject] = MessageParser::udp_update_object;
 	m_MsgMap[Packet::ID::IN_UDP_ViewUpdate] = MessageParser::upd_view_update;
@@ -203,6 +205,49 @@ void MessageParser::tcp_start_game(const rapidjson::Document& jd)
 	}
 }
 
+void MessageParser::tcp_finish_level(const rapidjson::Document& jd)
+{
+	int exp = -1;
+
+	if (jd.HasMember("exp"))
+	{
+		if (jd["exp"].IsInt())
+		{
+			exp = jd["exp"].GetInt();
+		}
+	}
+
+	// TODO : Display exp
+	NetworkManager::Instance()->m_PlayerExp = exp;
+
+	// Move back to lobby
+	if (GetActiveState() == ID::States::Game)
+	{
+		// TODO : Tell the game state to re-load the original level data
+
+		ChangeState(ID::States::Lobby);
+	}
+}
+
+void MessageParser::tcp_exp_queery(const rapidjson::Document& jd)
+{
+	int exp = -1;
+
+	if (jd.HasMember("exp"))
+	{
+		if (jd["exp"].IsInt())
+		{
+			exp = jd["exp"].GetInt();
+		}
+	}
+
+	// TODO : Display exp
+	NetworkManager::Instance()->m_PlayerExp = exp;
+
+	// Send Event
+}
+
+
 void MessageParser::udp_update_object(const rapidjson::Document& jd)
 {
 	if (jd["name"].IsInt())
@@ -213,6 +258,7 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 		{
 		case Packet::ID::IN_UDP_UpdatedObject:
 			int obj_id = -1;
+			bool active = true;
 			float x = -1;
 			float y = -1;
 			float fx = -1;
@@ -226,6 +272,18 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 				if (jd["handle"].IsInt())
 				{
 					obj_id = jd["handle"].GetInt();
+				}
+			}
+
+			if (jd.HasMember("active"))
+			{
+				if (jd["active"].IsInt())
+				{
+					active = (jd["active"].GetInt() == 1);
+				}
+				else if (jd["active"].IsBool())
+				{
+					active = jd["active"].GetBool();
 				}
 			}
 
@@ -318,6 +376,7 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 				ns.position = Vec2(x, y);
 				ns.frameX = fx;
 				ns.frameY = fy;
+				ns.active = active;
 				SendEvent(EventID::Net_UpdateGameObject, &ns);
 			}
 

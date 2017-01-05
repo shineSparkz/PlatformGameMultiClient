@@ -27,6 +27,7 @@ public:
 	void HandleInput(int k, int a) override;
 
 private:
+	void LoadLevel();
 	void ClearGameObjects();
 
 private:

@@ -27,7 +27,10 @@ void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 		{
 			boundbuffer->Deposit(std::string(buffer));
 		}
-
+		else if(status == sf::Socket::Disconnected || status == sf::Socket::Error)
+		{
+			break;
+		}
 		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
 }
@@ -72,7 +75,7 @@ void rcv_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 
 		if (sock->receive(buffer, BUFF_SIZE, received) != sf::Socket::Done)
 		{
-			// error...
+			break;
 		}
 		else
 		{
@@ -303,6 +306,22 @@ void NetworkManager::disconnectFromServer()
 		m_UdpSock->unbind();
 	}
 
+	if (m_UdpRcvThread)
+	{
+		if (m_UdpRcvThread->joinable())
+		{
+			m_UdpRcvThread->join();
+		}
+	}
+
+	if (m_TcpRcvThread)
+	{
+		if (m_TcpRcvThread->joinable())
+		{
+			m_TcpRcvThread->join();
+		}
+	}
+
 	SAFE_DELETE(m_TcpSock);
 	SAFE_DELETE(m_UdpSock);
 	SAFE_DELETE(m_UdpRcvBuffer);
@@ -388,4 +407,9 @@ int NetworkManager::playerId()const
 int NetworkManager::clientId()const
 {
 	return m_ClientId;
+}
+
+int NetworkManager::playerExp()const
+{
+	return m_PlayerExp;
 }

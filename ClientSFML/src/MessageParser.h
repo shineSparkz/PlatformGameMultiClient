@@ -22,6 +22,8 @@ private:
 	static void tcp_connect(const rapidjson::Document& data);
 	static void tcp_server_msg(const rapidjson::Document& data);
 	static void tcp_start_game(const rapidjson::Document& data);
+	static void tcp_finish_level(const rapidjson::Document& data);
+	static void tcp_exp_queery(const rapidjson::Document& data);
 
 	static void udp_update_object(const rapidjson::Document& data);
 	static void upd_view_update(const rapidjson::Document& data);

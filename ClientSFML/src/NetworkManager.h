@@ -35,6 +35,7 @@ public:
 
 	int playerId()const;
 	int clientId()const;
+	int playerExp()const;
 	bool connected() const;
 
 private:
@@ -63,6 +64,7 @@ private:
 	int m_ClientId;
 	int m_BoundedBuffSize;
 	int m_PlayerHandle;
+	int m_PlayerExp = 0;
 	bool m_Quit;
 	bool m_Connected;
 };

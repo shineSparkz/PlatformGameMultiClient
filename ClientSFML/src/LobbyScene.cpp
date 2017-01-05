@@ -358,6 +358,16 @@ bool LobbyScene::OnCreate(Context* const context)
 
 void LobbyScene::OnEntry()
 {
+	// TODO : Ask server for our exp level
+
+
+	// Re-centre the view
+	const Vec2& vs = Screen::Instance()->GetMainView().getSize();
+	Screen::Instance()->SetViewCentre(Vec2(vs.x * 0.5f, vs.y * 0.5f));
+
+	// Pre load the game level data
+	SendEvent(EventID::LoadLevelData, nullptr);
+
 	m_UserInfoStr = "Select Option";
 	CONFIRM_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::UseItemBind].key;
 	CANCEL_BUTTON = KeyBindings::KeyBindingList[KeyBindings::KeyBinds::InteractItemBind].key;
@@ -421,7 +431,7 @@ void LobbyScene::OnRender()
 		m_ServerInfoStrings[ServerInfo::Connected] = "Connected to server: " + util::bool_to_str(netMan->connected());
 		m_ServerInfoStrings[ServerInfo::UserName] = "UserName: " + m_UserName;
 		m_ServerInfoStrings[ServerInfo::Password] = "password: " + m_PassWordName;
-
+		m_ServerInfoStrings[ServerInfo::Experience] = "Experience: " + util::to_str(netMan->playerExp());
 	}
 
 	offset = -vs.y * 0.05f;

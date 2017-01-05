@@ -29,7 +29,10 @@ void GameScene::HandleEvent(Event* event_)
 {
 	switch (event_->GetID())
 	{
-		case Net_NewGameObject:
+	case LoadLevelData:
+		this->LoadLevel();
+		break;
+	case Net_NewGameObject:
 		{
 			GameObject* go = (GameObject*)event_->GetData();
 
@@ -46,7 +49,7 @@ void GameScene::HandleEvent(Event* event_)
 			}
 		}
 		break;
-		case Net_UpdateGameObject:
+	case Net_UpdateGameObject:
 		{
 			NetState* ns = (NetState*)event_->GetData();
 
@@ -77,6 +80,8 @@ void GameScene::HandleEvent(Event* event_)
 						static_cast<int>(ns->frameY * m_GameObjects[obj_id]->m_FrameSizeY),
 						static_cast<int>(m_GameObjects[obj_id]->m_FrameSizeX),
 						static_cast<int>(m_GameObjects[obj_id]->m_FrameSizeY)));
+
+					m_GameObjects[obj_id]->m_Active = ns->active;
 				}
 			}
 		}
@@ -88,10 +93,20 @@ bool GameScene::OnCreate(Context* const con)
 {
 	m_context = con;
 	
+	AttachEvent(EventID::LoadLevelData, *this);
 	AttachEvent(EventID::Net_NewGameObject, *this);
 	AttachEvent(EventID::Net_UpdateGameObject, *this);
 
-	// TODO : Move this HARDCODED level construction
+	//LoadLevel();
+
+	return true;
+}
+
+void GameScene::LoadLevel()
+{
+	// This needs to be pre-loaded by the lobby
+	if (!m_GameObjects.empty())
+		return;
 
 	for (int i = 0; i < 12; ++i)
 	{
@@ -103,7 +118,7 @@ bool GameScene::OnCreate(Context* const con)
 		go->m_FrameSizeY = 64;
 
 		sf::Sprite spr;
-		spr.setPosition(Vec2((float)i*64, (float)450));
+		spr.setPosition(Vec2((float)i * 64, (float)450));
 		spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
 		go->m_Sprite = spr;
 
@@ -135,7 +150,36 @@ bool GameScene::OnCreate(Context* const con)
 	enemy->m_Sprite = espr;
 	m_GameObjects.push_back(enemy);
 
-	return true;
+	// Exit
+	GameObject* exit = new GameObject();
+	exit->m_TypeId = (int)ID::Type::Exit;
+	exit->m_UniqueId = m_GameObjects.size();
+	exit->m_FrameSizeX = 768 / 6;
+	exit->m_FrameSizeY = 630 / 5;
+	sf::Sprite exspr;
+	exspr.setPosition(14 * 64, 400);
+	exspr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::LevelExit));
+	exspr.setTextureRect(sf::IntRect(0, 2 * (int)exit->m_FrameSizeY, (int)exit->m_FrameSizeX, (int)exit->m_FrameSizeY));
+	exit->m_Sprite = exspr;
+	m_GameObjects.push_back(exit);
+
+
+	// Bullets last
+	for (int i = 0; i < 10; ++i)
+	{
+		GameObject* b = new GameObject();
+		b->m_TypeId = (int)ID::Type::PlayerProjectile;
+		b->m_UniqueId = m_GameObjects.size();
+		b->m_FrameSizeX = 32;
+		b->m_FrameSizeY = 32;
+		b->m_Active = false;
+		sf::Sprite s;
+		s.setPosition(0, 0);
+		s.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Fireball));
+		s.setTextureRect(sf::IntRect(2*32, 2*32, (int)b->m_FrameSizeX, (int)b->m_FrameSizeY));
+		b->m_Sprite = s;
+		m_GameObjects.push_back(b);
+	}
 }
 
 void GameScene::OnEntry()
@@ -152,6 +196,8 @@ void GameScene::Close()
 {
 	DetachEvent(EventID::Net_NewGameObject, *this);
 	DetachEvent(EventID::Net_UpdateGameObject, *this);
+	DetachEvent(EventID::LoadLevelData, *this);
+
 	this->ClearGameObjects();
 }
 
@@ -161,7 +207,8 @@ void GameScene::OnRender()
 	{
 		for each (GameObject* go in m_GameObjects)
 		{
-			m_context->window->draw(go->m_Sprite);
+			if(go->m_Active)
+				m_context->window->draw(go->m_Sprite);
 		}
 	}
 }
@@ -200,6 +247,7 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 
 void GameScene::HandleInput(int k, int a)
 {
+	//57 is space
 	// TODO : Put this in a network component
 	if (NetworkManager::Instance()->connected())
 	{

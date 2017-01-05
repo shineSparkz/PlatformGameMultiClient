@@ -9,6 +9,8 @@ namespace Packet
 		IN_TCP_Connect,
 		IN_TCP_ServerMsg,
 		IN_TCP_StartGame,
+		IN_TCP_FinishLevel,
+		IN_TCP_ExpQueery,
 		
 		// UDP in
 		IN_UDP_UpdatedObject,
@@ -18,6 +20,7 @@ namespace Packet
 		OUT_TCP_CreateAccount,
 		OUT_TCP_Login,
 		OUT_TCP_StartGame,
+		OUT_TCP_ExpQueery,
 
 		// UDP out
 		OUT_UDP_Input
