@@ -7,6 +7,7 @@
 #include "SceneGraph.h"
 #include "GameObject.h"
 #include "NetState.h"
+#include "Screen.h"
 
 bool MessageParser::Init()
 {
@@ -15,6 +16,8 @@ bool MessageParser::Init()
 	m_MsgMap[Packet::ID::IN_TCP_StartGame] = MessageParser::tcp_start_game;
 
 	m_MsgMap[Packet::ID::IN_UDP_UpdatedObject] = MessageParser::udp_update_object;
+	m_MsgMap[Packet::ID::IN_UDP_ViewUpdate] = MessageParser::upd_view_update;
+
 	//... etc
 
 	return true;
@@ -321,5 +324,37 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 			break;
 		}
 	}
+}
+
+void MessageParser::upd_view_update(const rapidjson::Document& jd)
+{
+	float x = 0;
+	float y = 0;
+
+	if (jd.HasMember("px"))
+	{
+		if (jd["px"].IsFloat())
+		{
+			x = jd["px"].GetFloat();
+		}
+		else if (jd["px"].IsInt())
+		{
+			x = (float)jd["px"].GetInt();
+		}
+	}
+
+	if (jd.HasMember("py"))
+	{
+		if (jd["py"].IsFloat())
+		{
+			y = jd["py"].GetFloat();
+		}
+		else if (jd["py"].IsInt())
+		{
+			y = (float)jd["py"].GetInt();
+		}
+	}
+
+	Screen::Instance()->SetViewCentre(Vec2(x, y));
 }
 

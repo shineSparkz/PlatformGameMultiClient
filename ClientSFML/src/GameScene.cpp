@@ -7,6 +7,7 @@
 #include "NetworkManager.h"
 #include "Application.h"
 #include "utils.h"
+#include "Screen.h"
 
 #include "NetworkManager.h"
 
@@ -176,7 +177,7 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 	{
 		t += dt.asSeconds();
 
-		if (t > 2.0f)
+		if (t > 1.0f)
 		{
 			m_SceneReady = true;
 		}
@@ -186,6 +187,8 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 	
 	if (playerId < m_GameObjects.size() && NetworkManager::Instance()->connected())
 	{
+		//Screen::Instance()->SetViewCentre(m_GameObjects[playerId]->m_Sprite.getPosition());
+
 		// How to do velocity next
 		// Quick Gravity hack (awful)
 		//NetworkManager::Instance()->sendUdp(

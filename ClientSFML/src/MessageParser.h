@@ -24,6 +24,7 @@ private:
 	static void tcp_start_game(const rapidjson::Document& data);
 
 	static void udp_update_object(const rapidjson::Document& data);
+	static void upd_view_update(const rapidjson::Document& data);
 
 private:
 	std::map<Packet::ID, MsgFunction> m_MsgMap;

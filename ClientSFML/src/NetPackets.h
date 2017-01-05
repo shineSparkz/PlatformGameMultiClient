@@ -12,6 +12,7 @@ namespace Packet
 		
 		// UDP in
 		IN_UDP_UpdatedObject,
+		IN_UDP_ViewUpdate,
 
 		// TCP out
 		OUT_TCP_CreateAccount,
