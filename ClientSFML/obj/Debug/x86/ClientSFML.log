@@ -1,3 +1,5 @@
-﻿  GameScene.cpp
+﻿  TitleScene.cpp
+  Application.cpp
+  Generating Code...
   ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe
   ClientSFML.vcxproj -> E:\Documents\uni\year_3\multiplayer\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.pdb (Full PDB)

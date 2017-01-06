@@ -32,6 +32,7 @@ private:
 
 private:
 	std::vector<GameObject*> m_GameObjects;
+	sf::Sprite* m_BackgroundSprite;
 	size_t m_PlayerHandle;
 	bool m_SceneReady = false;
 };

@@ -13,7 +13,7 @@ TitleScene::TitleScene() :
 	m_TextObject(nullptr),
 	m_OptionStrings(),
 	m_UserInfoStr(""),
-	m_Options(Options::Continue),
+	m_Options(Options::Multiplayer),
 	m_MenuState(MenuState::Normal),
 	CONFIRM_BUTTON(0),
 	CANCEL_BUTTON(0)
@@ -34,11 +34,9 @@ bool TitleScene::OnCreate(Context* const con)
 	m_BgSprite->setTexture(m_context->textures->Get(ID::Texture::TitleScreenArt));
 	m_BgSprite->setScale(Vec2(0.8f, 0.8f));
 
-	m_OptionStrings[0] = "Continue";
-	m_OptionStrings[1] = "New Game";
-	m_OptionStrings[2] = "Multiplayer";
-	m_OptionStrings[3] = "Settings";
-	m_OptionStrings[4] = "Quit Game";
+	m_OptionStrings[0] = "Multiplayer";
+	m_OptionStrings[1] = "Settings";
+	m_OptionStrings[2] = "Quit Game";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
@@ -138,7 +136,7 @@ void TitleScene::HandleInput(int k, int a)
 				--selopt;
 				m_Options = (Options)selopt;
 
-				if (m_Options < Options::Continue)
+				if (m_Options < Options::Multiplayer)
 					m_Options = Options::Quit;
 			}
 		}
@@ -153,7 +151,7 @@ void TitleScene::HandleInput(int k, int a)
 				++selopt;
 				m_Options = (Options)selopt;
 				if (m_Options > Options::Quit)
-					m_Options = Options::Continue;
+					m_Options = Options::Multiplayer;
 			}
 		}
 
@@ -173,31 +171,9 @@ void TitleScene::HandleInput(int k, int a)
 		{
 			bool quit = false;
 			bool load_game = false;
-			bool multi = false;
 
 			switch (m_Options)
 			{
-			case Options::Continue:
-				load_game = true;
-				break;
-			case Options::NewGame:
-				if (m_MenuState == Normal)
-				{
-					m_MenuState = Pending;
-					std::stringstream ss;
-					ss << "Start new game? (Yes[";
-					ss << KeyBindings::GetStringFromKey(CONFIRM_BUTTON);
-					ss << "],No[";
-					ss << KeyBindings::GetStringFromKey(CANCEL_BUTTON);
-					ss << "])";
-					m_UserInfoStr = ss.str();
-				}
-				else
-				{
-					m_MenuState = Normal;
-					m_UserInfoStr = "";
-				}
-				break;
 			case Options::Multiplayer:
 				if (m_MenuState == Normal)
 				{
@@ -214,12 +190,11 @@ void TitleScene::HandleInput(int k, int a)
 				{
 					m_MenuState = Normal;
 					m_UserInfoStr = "";
-					multi = true;
 				}
 				break;
 			case Options::Settings:
 				//SoundPlayer::Instance()->PlayASound(ID::Audio::PauseSound);
-				ChangeState(ID::States::Pause, false);
+				//ChangeState(ID::States::Pause, false);
 				break;
 			case Options::Quit:
 				quit = true;
@@ -234,16 +209,7 @@ void TitleScene::HandleInput(int k, int a)
 
 				if (m_MenuState != Pending)
 				{
-					if (!multi)
-					{
-						// **TODO - Single player
-						//EventSys::SendEvent(EventSys::LoadGameStartup, &load_game);
-						//ChangeState(ID::States::WorldMap, false);
-					}
-					else
-					{
-						ChangeState(ID::States::Lobby, false);
-					}
+					ChangeState(ID::States::Lobby, false);
 				}
 			}
 			else

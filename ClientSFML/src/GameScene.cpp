@@ -17,7 +17,8 @@ rapidjson::StringBuffer g_sBuffer;
 
 
 GameScene::GameScene() : 
-	IScene()
+	IScene(),
+	m_BackgroundSprite(nullptr)
 {
 }
 
@@ -97,7 +98,10 @@ bool GameScene::OnCreate(Context* const con)
 	AttachEvent(EventID::Net_NewGameObject, *this);
 	AttachEvent(EventID::Net_UpdateGameObject, *this);
 
-	//LoadLevel();
+	// Background
+	m_BackgroundSprite = new sf::Sprite();
+	m_BackgroundSprite->setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Bkgrnd_RedMtn));
+	m_BackgroundSprite->setScale(2.0f, 2.0f);
 
 	return true;
 }
@@ -163,6 +167,18 @@ void GameScene::LoadLevel()
 	exit->m_Sprite = exspr;
 	m_GameObjects.push_back(exit);
 
+	// Collect Skull
+	GameObject* skull = new GameObject();
+	skull->m_TypeId = (int)ID::Type::Exit;
+	skull->m_UniqueId = m_GameObjects.size();
+	skull->m_FrameSizeX = 32;
+	skull->m_FrameSizeY = 32;
+	sf::Sprite skullspr;
+	skullspr.setPosition(10 * 64, 200);
+	skullspr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::GoldSkull));
+	skullspr.setTextureRect(sf::IntRect(0, 0, (int)skull->m_FrameSizeX, (int)skull->m_FrameSizeY));
+	skull->m_Sprite = skullspr;
+	m_GameObjects.push_back(skull);
 
 	// Bullets last
 	for (int i = 0; i < 10; ++i)
@@ -199,12 +215,33 @@ void GameScene::Close()
 	DetachEvent(EventID::LoadLevelData, *this);
 
 	this->ClearGameObjects();
+	SAFE_DELETE(m_BackgroundSprite);
 }
 
 void GameScene::OnRender()
 {
 	if (m_SceneReady)
 	{
+		const Vec2& vs = Screen::Instance()->GetMainView().getSize();
+		const Vec2& vp = Screen::Instance()->GetViewPos();
+
+		// Render Background
+		const float bg_width = (float)m_BackgroundSprite->getTexture()->getSize().x;
+		const float bg_height = (float)m_BackgroundSprite->getTexture()->getSize().y;
+		const bool tileX = true;
+		const bool tileY = false;
+		int num_x = tileX ? static_cast<int>(vs.x / bg_width + 1) : 1;
+		int num_y = tileY ? static_cast<int>(vs.y / bg_height + 1) : 1;
+
+		for (int y = 0; y < num_y; ++y)
+		{
+			for (int x = 0; x < num_x; ++x)
+			{
+				m_BackgroundSprite->setPosition(Vec2(vp.x + (x * bg_width), vp.y + (y * bg_height)));
+				m_context->window->draw(*m_BackgroundSprite);
+			}
+		}
+		
 		for each (GameObject* go in m_GameObjects)
 		{
 			if(go->m_Active)
