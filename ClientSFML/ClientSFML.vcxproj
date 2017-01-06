@@ -170,6 +170,7 @@
     <ClCompile Include="src\GameScene.cpp" />
     <ClCompile Include="src\IScene.cpp" />
     <ClCompile Include="src\KeyEvent.cpp" />
+    <ClCompile Include="src\LeaderboardScene.cpp" />
     <ClCompile Include="src\LobbyScene.cpp" />
     <ClCompile Include="src\LogFile.cpp" />
     <ClCompile Include="src\MessageParser.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="src\identifiers.h" />
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\KeyEvent.h" />
+    <ClInclude Include="src\LeaderboardScene.h" />
     <ClInclude Include="src\LobbyScene.h" />
     <ClInclude Include="src\LogFile.h" />
     <ClInclude Include="src\MessageParser.h" />

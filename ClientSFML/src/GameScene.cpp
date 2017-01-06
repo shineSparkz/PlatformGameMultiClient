@@ -8,6 +8,7 @@
 #include "Application.h"
 #include "utils.h"
 #include "Screen.h"
+#include "utils.h"
 
 #include "NetworkManager.h"
 
@@ -18,7 +19,8 @@ rapidjson::StringBuffer g_sBuffer;
 
 GameScene::GameScene() : 
 	IScene(),
-	m_BackgroundSprite(nullptr)
+	m_BackgroundSprite(nullptr),
+	m_TextObject(nullptr)
 {
 }
 
@@ -103,6 +105,12 @@ bool GameScene::OnCreate(Context* const con)
 	m_BackgroundSprite->setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Bkgrnd_RedMtn));
 	m_BackgroundSprite->setScale(2.0f, 2.0f);
 
+	// Text Rendering
+	if (!m_TextObject)
+		m_TextObject = new sf::Text();
+	m_TextObject->setFont(m_context->fonts->Get(ID::Font::GOTHIC));
+	m_TextObject->setCharacterSize(18);
+
 	return true;
 }
 
@@ -180,6 +188,19 @@ void GameScene::LoadLevel()
 	skull->m_Sprite = skullspr;
 	m_GameObjects.push_back(skull);
 
+	//GameObject shadow = new ShadowEnemy(new Vector2(300, 450 - 64), GameObjectType.EnemyShadow, m_GameObjects.Count, 0, true);
+	GameObject* shadowEnem = new GameObject();
+	shadowEnem->m_TypeId = (int)ID::Type::EnemyShadow;
+	shadowEnem->m_UniqueId = m_GameObjects.size();
+	shadowEnem->m_FrameSizeX = 80;
+	shadowEnem->m_FrameSizeY = 70;
+	sf::Sprite shadspr;
+	shadspr.setPosition(300, 450-64);
+	shadspr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::ShadowEnemy));
+	shadspr.setTextureRect(sf::IntRect(0, 0, (int)shadowEnem->m_FrameSizeX, (int)shadowEnem->m_FrameSizeY));
+	shadowEnem->m_Sprite = shadspr;
+	m_GameObjects.push_back(shadowEnem);
+
 	// Bullets last
 	for (int i = 0; i < 10; ++i)
 	{
@@ -216,6 +237,7 @@ void GameScene::Close()
 
 	this->ClearGameObjects();
 	SAFE_DELETE(m_BackgroundSprite);
+	SAFE_DELETE(m_TextObject);
 }
 
 void GameScene::OnRender()
@@ -252,6 +274,8 @@ void GameScene::OnRender()
 
 void GameScene::LateRender()
 {
+	Vec2 vp = Screen::Instance()->GetViewPos();
+	Screen::RenderText(m_context->window, m_TextObject, "Experience: " + util::to_str(NetworkManager::Instance()->playerExp()), Vec2(vp.x + 16.0f, vp.y + 16.0f), Screen::AlignLeft, 0, sf::Color::Red);
 }
 
 bool GameScene::OnUpdate(const sf::Time& dt)

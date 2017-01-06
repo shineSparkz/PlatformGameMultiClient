@@ -70,6 +70,9 @@
     <ClCompile Include="src\PlayerCredentialBin.cpp">
       <Filter>Network</Filter>
     </ClCompile>
+    <ClCompile Include="src\LeaderboardScene.cpp">
+      <Filter>SceneManagement</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\BoundedBuffer.h">
@@ -152,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="src\PlayerCredentialsBin.h">
       <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LeaderboardScene.h">
+      <Filter>SceneManagement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

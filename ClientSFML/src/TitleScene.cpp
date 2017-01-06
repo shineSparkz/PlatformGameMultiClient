@@ -36,7 +36,8 @@ bool TitleScene::OnCreate(Context* const con)
 
 	m_OptionStrings[0] = "Multiplayer";
 	m_OptionStrings[1] = "Settings";
-	m_OptionStrings[2] = "Quit Game";
+	m_OptionStrings[2] = "LeaderBoards";
+	m_OptionStrings[3] = "Quit Game";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
@@ -195,6 +196,9 @@ void TitleScene::HandleInput(int k, int a)
 			case Options::Settings:
 				//SoundPlayer::Instance()->PlayASound(ID::Audio::PauseSound);
 				//ChangeState(ID::States::Pause, false);
+				break;
+			case Options::LeaderBoards:
+				ChangeState(ID::States::Leaderboards, false);
 				break;
 			case Options::Quit:
 				quit = true;

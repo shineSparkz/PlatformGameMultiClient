@@ -11,6 +11,7 @@ class TitleScene : public IScene
 	{
 		Multiplayer,
 		Settings,
+		LeaderBoards,
 		Quit,
 		OptionSize
 	};
@@ -33,7 +34,7 @@ private:
 	sf::Sprite* m_BgSprite;
 	sf::Text* m_TextObject;
 
-	std::string m_OptionStrings[3];
+	std::string m_OptionStrings[4];
 	std::string m_UserInfoStr;
 
 	Options m_Options = Options::Multiplayer;

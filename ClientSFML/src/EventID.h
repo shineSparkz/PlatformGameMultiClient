@@ -26,6 +26,7 @@ enum EventID
 	// Network accounts
 	Net_StartGameCallback,
 	Net_ServerMsgCallback,
+	Net_DatabaseRequest,
 
 	// Network
 	Net_NewGameObject,

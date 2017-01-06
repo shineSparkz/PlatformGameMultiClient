@@ -191,7 +191,7 @@ void LobbyScene::HandleInput(int k, int a)
 				case LobbyOptions::Return:
 					if (NetworkManager::Instance()->connected())
 					{
-						NetworkManager::Instance()->disconnectFromServer();
+						//NetworkManager::Instance()->disconnectFromServer();
 					}
 					ChangeState(ID::States::Title);
 					break;

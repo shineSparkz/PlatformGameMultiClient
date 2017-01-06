@@ -9,6 +9,7 @@
 #include "NetworkManager.h"
 #include "TitleScene.h"
 #include "LobbyScene.h"
+#include "LeaderboardScene.h"
 //#include "PauseScene.h"
 //#include "WorldMapScene.h"
 //#include "InventoryScene.h"
@@ -127,6 +128,7 @@ bool Application::Init(const std::string& app_name)
 	GameScene gam;
 	TitleScene tit;
 	LobbyScene lob;
+	LeaderboardScene lbd;
 	//PauseState pas;
 	//WorldMapState wm;
 	//InventoryState inv;
@@ -134,6 +136,7 @@ bool Application::Init(const std::string& app_name)
 	m_SceneGraph->RegisterState(ID::States::Game, gam);
 	m_SceneGraph->RegisterState(ID::States::Title, tit);
 	m_SceneGraph->RegisterState(ID::States::Lobby, lob);
+	m_SceneGraph->RegisterState(ID::States::Leaderboards, lbd);
 	//m_SceneGraph->RegisterState(ID::States::WorldMap, wm);
 	//m_SceneGraph->RegisterState(ID::States::Inventory, inv);
 

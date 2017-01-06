@@ -76,7 +76,8 @@ namespace ID
 		WorldMap = 8,
 		Inventory = 16,
 		GameOver = 32,
-		Lobby = 64
+		Lobby = 64,
+		Leaderboards = 128
 	};
 
 	enum class Texture

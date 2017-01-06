@@ -16,6 +16,7 @@ bool MessageParser::Init()
 	m_MsgMap[Packet::ID::IN_TCP_StartGame] = MessageParser::tcp_start_game;
 	m_MsgMap[Packet::ID::IN_TCP_FinishLevel] = MessageParser::tcp_finish_level;
 	m_MsgMap[Packet::ID::IN_TCP_ExpQueery] = MessageParser::tcp_exp_queery;
+	m_MsgMap[Packet::ID::IN_TCP_LeaderboardRequest] = MessageParser::tcp_leaderboard_request;
 
 	m_MsgMap[Packet::ID::IN_UDP_UpdatedObject] = MessageParser::udp_update_object;
 	m_MsgMap[Packet::ID::IN_UDP_ViewUpdate] = MessageParser::upd_view_update;
@@ -245,6 +246,25 @@ void MessageParser::tcp_exp_queery(const rapidjson::Document& jd)
 	NetworkManager::Instance()->m_PlayerExp = exp;
 
 	// Send Event
+}
+
+void MessageParser::tcp_leaderboard_request(const rapidjson::Document& jd)
+{
+	// This is actualy only a call back for a failed start game, for sucess we just load the map and inform the lobby
+	std::string msg = "Error";
+	if (jd.IsObject())
+	{
+		if (jd.HasMember("data"))
+		{
+			if (jd["data"].IsString())
+			{
+				msg = jd["data"].GetString();
+			}
+		}
+	}
+
+	// Inform lobby on net manager
+	SendEvent(EventID::Net_DatabaseRequest, &msg);
 }
 
 
