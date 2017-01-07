@@ -9,6 +9,11 @@
 #include "NetState.h"
 #include "Screen.h"
 
+MessageParser::~MessageParser()
+{
+	m_MsgMap.clear();
+}
+
 bool MessageParser::Init()
 {
 	m_MsgMap[Packet::ID::IN_TCP_Connect] = MessageParser::tcp_connect;

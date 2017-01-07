@@ -13,7 +13,6 @@ LeaderboardScene::LeaderboardScene() :
 
 LeaderboardScene::~LeaderboardScene()
 {
-
 }
 
 void LeaderboardScene::HandleEvent(Event* ev)

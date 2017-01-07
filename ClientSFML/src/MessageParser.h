@@ -5,15 +5,12 @@
 #include <map>
 #include "NetworkManager.h"
 
-/*
-Creates game specific data for the message handler
-*/
-
 class MessageParser
 {
 	typedef void(*MsgFunction)(const rapidjson::Document& data);
 
 public:
+	~MessageParser();
 	bool Init();
 	void Parse(const rapidjson::Document& jd);
 

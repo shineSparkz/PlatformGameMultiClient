@@ -9,13 +9,12 @@
 #include "utils.h"
 #include "Screen.h"
 #include "utils.h"
+#include "TextFile.h"
 
 #include "NetworkManager.h"
 
 // Sort this out
 float t = 0.0f;
-rapidjson::StringBuffer g_sBuffer;
-
 
 GameScene::GameScene() : 
 	IScene(),
@@ -120,103 +119,146 @@ void GameScene::LoadLevel()
 	if (!m_GameObjects.empty())
 		return;
 
+	TextFile file;
+
+	if (file.LoadFileAsLinesToBuffer("resources/data/obj_map_0.txt"))
+	{
+		// First get width and height from first two lines of file
+		int CellSize = file.GetDataAsInt(0);
+		int MapWidth = file.GetDataAsInt(1);
+		int MapHeight = file.GetDataAsInt(2);
+
+		int MapRows = MapHeight / CellSize;
+		int MapCols = MapWidth / CellSize;
+
+		// Current line in file
+		int32 line_number = 3;
+
+		for (uint32 y = 0; y < MapRows; ++y)
+		{
+			std::string line = file.GetDataBuffer(line_number);
+			auto split = util::split_str(line, ',');
+
+			for (uint32 x = 0; x < split.size(); ++x)
+			{
+				ID::Type type = static_cast<ID::Type>(atoi(split[x].c_str()));
+
+				Vec2 tile_pos = Vec2(static_cast<float>(x * CellSize),
+					static_cast<float> (y * CellSize));
+
+				// We don't care what it returns
+				//this->InstantiateGameObject(type, tile_pos, Vec2(1.0f, 1.0f));
+
+				switch (type)
+				{
+				case ID::Type::DestructablePlatform:
+				{
+					this->CreateGameObject(ID::Type::DestructablePlatform, 64, 64, tile_pos.x, tile_pos.y, ID::Texture::DestructableWall, 0, 0);
+				}
+				break;
+				case ID::Type::EnemyBlueMinion:
+				{
+					this->CreateGameObject(ID::Type::EnemyBlueMinion, 45, 66, tile_pos.x, tile_pos.y, ID::Texture::BlueMinionEnemy, 0, 0);
+				}
+				break;
+				case ID::Type::EnemyDisciple:
+				{
+					this->CreateGameObject(ID::Type::EnemyDisciple, 45, 51, tile_pos.x, tile_pos.y, ID::Texture::DiscipleEnemy, 0, 0, true, 2.0f);
+				}
+				break;
+				case ID::Type::EnemyShadow:
+				{
+					this->CreateGameObject(ID::Type::EnemyShadow, 80, 70, tile_pos.x, tile_pos.y, ID::Texture::ShadowEnemy, 0, 0);
+				}
+				break;
+				case ID::Type::Exit:
+				{
+					this->CreateGameObject(ID::Type::Exit, 768 / 6, 630 / 5, tile_pos.x, tile_pos.y, ID::Texture::LevelExit, 0, 2 * (630 / 5));
+				}
+				break;
+				case ID::Type::GoldSkull:
+				{
+					this->CreateGameObject(ID::Type::GoldSkull, 32, 32, tile_pos.x, tile_pos.y, ID::Texture::GoldSkull, 0, 0);
+				}
+				break;
+				case ID::Type::Player:
+				{
+				}
+				break;
+				case ID::Type::Spike:
+				{
+					this->CreateGameObject(ID::Type::Spike, 32, 32, tile_pos.x, tile_pos.y, ID::Texture::Spikes, 0, 0, true, 2.0f);
+				}
+				break;
+				case ID::Type::Wall:
+				{
+					this->CreateGameObject(ID::Type::Wall, 64, 64, tile_pos.x, tile_pos.y, ID::Texture::BloodMtn_TileSet, 64, 64);
+				}
+				break;
+				default:
+					break;
+				}
+			}
+
+			++line_number;
+		}
+	}
+
+	/*
 	for (int i = 0; i < 12; ++i)
 	{
 		// Create Object from parsed data
-		GameObject* go = new GameObject();
-		go->m_TypeId = (int)ID::Type::Wall;
-		go->m_UniqueId = m_GameObjects.size();
-		go->m_FrameSizeX = 64;
-		go->m_FrameSizeY = 64;
-
-		sf::Sprite spr;
-		spr.setPosition(Vec2((float)i * 64, (float)450));
-		spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
-		go->m_Sprite = spr;
-
-		m_GameObjects.push_back(go);
+		this->CreateGameObject(ID::Type::Wall, 64, 64, (float)i * 64, 450, ID::Texture::BloodMtn_TileSet, 64, 64);
 	}
 
 	// One more wall
-	GameObject* go = new GameObject();
-	go->m_TypeId = (int)ID::Type::Wall;
-	go->m_UniqueId = m_GameObjects.size();
-	go->m_FrameSizeX = 64;
-	go->m_FrameSizeY = 64;
-	sf::Sprite spr;
-	spr.setPosition(Vec2(7 * 64, 350));
-	spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::DestructableWall));
-	go->m_Sprite = spr;
-	m_GameObjects.push_back(go);
+	this->CreateGameObject(ID::Type::Wall, 64, 64, 7 * 64, 350, ID::Texture::BloodMtn_TileSet, 64, 64);
 
-	// Enemy
-	GameObject* enemy = new GameObject();
-	enemy->m_TypeId = (int)ID::Type::EnemyBlueMinion;
-	enemy->m_UniqueId = m_GameObjects.size();
-	enemy->m_FrameSizeX = 45;
-	enemy->m_FrameSizeY = 66;
-	sf::Sprite espr;
-	espr.setPosition(Vec2(200, 200));
-	espr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::BlueMinionEnemy));
-	espr.setTextureRect(sf::IntRect(0, 0, (int)enemy->m_FrameSizeX, (int)enemy->m_FrameSizeY));
-	enemy->m_Sprite = espr;
-	m_GameObjects.push_back(enemy);
+	// Blue Minion Enemy
+	this->CreateGameObject(ID::Type::EnemyBlueMinion, 45, 66, 200, 200, ID::Texture::BlueMinionEnemy, 0, 0);
 
 	// Exit
-	GameObject* exit = new GameObject();
-	exit->m_TypeId = (int)ID::Type::Exit;
-	exit->m_UniqueId = m_GameObjects.size();
-	exit->m_FrameSizeX = 768 / 6;
-	exit->m_FrameSizeY = 630 / 5;
-	sf::Sprite exspr;
-	exspr.setPosition(14 * 64, 400);
-	exspr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::LevelExit));
-	exspr.setTextureRect(sf::IntRect(0, 2 * (int)exit->m_FrameSizeY, (int)exit->m_FrameSizeX, (int)exit->m_FrameSizeY));
-	exit->m_Sprite = exspr;
-	m_GameObjects.push_back(exit);
+	this->CreateGameObject(ID::Type::Exit, 768/6, 630/5, 14*64, 400, ID::Texture::LevelExit, 0, 2 * (630/5));
 
 	// Collect Skull
-	GameObject* skull = new GameObject();
-	skull->m_TypeId = (int)ID::Type::Exit;
-	skull->m_UniqueId = m_GameObjects.size();
-	skull->m_FrameSizeX = 32;
-	skull->m_FrameSizeY = 32;
-	sf::Sprite skullspr;
-	skullspr.setPosition(10 * 64, 200);
-	skullspr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::GoldSkull));
-	skullspr.setTextureRect(sf::IntRect(0, 0, (int)skull->m_FrameSizeX, (int)skull->m_FrameSizeY));
-	skull->m_Sprite = skullspr;
-	m_GameObjects.push_back(skull);
+	this->CreateGameObject(ID::Type::GoldSkull, 32, 32, 10*64, 200, ID::Texture::GoldSkull, 0, 0);
 
-	//GameObject shadow = new ShadowEnemy(new Vector2(300, 450 - 64), GameObjectType.EnemyShadow, m_GameObjects.Count, 0, true);
-	GameObject* shadowEnem = new GameObject();
-	shadowEnem->m_TypeId = (int)ID::Type::EnemyShadow;
-	shadowEnem->m_UniqueId = m_GameObjects.size();
-	shadowEnem->m_FrameSizeX = 80;
-	shadowEnem->m_FrameSizeY = 70;
-	sf::Sprite shadspr;
-	shadspr.setPosition(300, 450-64);
-	shadspr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::ShadowEnemy));
-	shadspr.setTextureRect(sf::IntRect(0, 0, (int)shadowEnem->m_FrameSizeX, (int)shadowEnem->m_FrameSizeY));
-	shadowEnem->m_Sprite = shadspr;
-	m_GameObjects.push_back(shadowEnem);
+	// Shadow Enemy
+	this->CreateGameObject(ID::Type::EnemyShadow, 80, 70, 300, 450-64, ID::Texture::ShadowEnemy, 0, 0);
 
+	// Disciple
+	this->CreateGameObject(ID::Type::EnemyDisciple, 45, 51, 370, 450 - 64, ID::Texture::DiscipleEnemy, 0, 0, true, 2.0f);
+
+	// Destroy Box
+	this->CreateGameObject(ID::Type::DestructablePlatform, 64, 64, 590, 450-64, ID::Texture::DestructableWall, 0, 0);
+
+	// Spike
+	this->CreateGameObject(ID::Type::Spike, 32, 32, 520, 450-64, ID::Texture::Spikes, 0, 0, true, 2.0f);
+	*/
 	// Bullets last
 	for (int i = 0; i < 10; ++i)
 	{
-		GameObject* b = new GameObject();
-		b->m_TypeId = (int)ID::Type::PlayerProjectile;
-		b->m_UniqueId = m_GameObjects.size();
-		b->m_FrameSizeX = 32;
-		b->m_FrameSizeY = 32;
-		b->m_Active = false;
-		sf::Sprite s;
-		s.setPosition(0, 0);
-		s.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Fireball));
-		s.setTextureRect(sf::IntRect(2*32, 2*32, (int)b->m_FrameSizeX, (int)b->m_FrameSizeY));
-		b->m_Sprite = s;
-		m_GameObjects.push_back(b);
+		this->CreateGameObject(ID::Type::PlayerProjectile, 32, 32, 0, 0, ID::Texture::Fireball, 64, 64, false);
 	}
+}
+
+void GameScene::CreateGameObject(ID::Type typeId, float frameSzX, float frameSzY,
+	float xpos, float ypos, ID::Texture texID, int texPosX, int texPosY, bool active, float scale)
+{
+	GameObject* go = new GameObject();
+	go->m_TypeId = (int)typeId;
+	go->m_UniqueId = m_GameObjects.size();
+	go->m_FrameSizeX = frameSzX;
+	go->m_FrameSizeY = frameSzY;
+	go->m_Active = active;
+	
+	sf::Sprite spr;
+	spr.setPosition(Vec2(xpos, ypos));
+	spr.setTexture(Application::Instance()->GetTexHolder().Get(texID));
+	spr.setScale(scale, scale);
+	spr.setTextureRect(sf::IntRect(texPosX, texPosY, (int)go->m_FrameSizeX, (int)go->m_FrameSizeY));
+	go->m_Sprite = spr;
+	m_GameObjects.push_back(go);
 }
 
 void GameScene::OnEntry()
@@ -291,18 +333,6 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 		}
 	}
 
-	size_t playerId = (size_t)NetworkManager::Instance()->playerId();
-	
-	if (playerId < m_GameObjects.size() && NetworkManager::Instance()->connected())
-	{
-		//Screen::Instance()->SetViewCentre(m_GameObjects[playerId]->m_Sprite.getPosition());
-
-		// How to do velocity next
-		// Quick Gravity hack (awful)
-		//NetworkManager::Instance()->sendUdp(
-		//	"input:" + std::to_string(sf::Keyboard::S) + ":" + std::to_string(NetworkManager::Instance()->clientId()));
-	}
-
 	return true;
 }
 
@@ -312,6 +342,7 @@ void GameScene::HandleInput(int k, int a)
 	// TODO : Put this in a network component
 	if (NetworkManager::Instance()->connected())
 	{
+		rapidjson::StringBuffer g_sBuffer;
 		rapidjson::Writer<rapidjson::StringBuffer> g_Writer(g_sBuffer);
 
 		g_Writer.StartObject();
@@ -326,7 +357,6 @@ void GameScene::HandleInput(int k, int a)
 		g_Writer.EndObject();
 
 		NetworkManager::Instance()->sendUdp(g_sBuffer.GetString());
-		g_sBuffer.Clear();
 
 		// Predict Locally
 		/*

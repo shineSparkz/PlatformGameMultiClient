@@ -358,9 +358,6 @@ bool LobbyScene::OnCreate(Context* const context)
 
 void LobbyScene::OnEntry()
 {
-	// TODO : Ask server for our exp level
-
-
 	// Re-centre the view
 	const Vec2& vs = Screen::Instance()->GetMainView().getSize();
 	Screen::Instance()->SetViewCentre(Vec2(vs.x * 0.5f, vs.y * 0.5f));

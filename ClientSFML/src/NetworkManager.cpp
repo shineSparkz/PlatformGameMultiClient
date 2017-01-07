@@ -33,6 +33,8 @@ void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 		}
 		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
+
+	//bool c = false;
 }
 
 void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, const std::string& ipAddr, int port)
@@ -63,6 +65,8 @@ void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, const 
 		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
+
+	//bool c = false;
 }
 
 void rcv_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
@@ -82,6 +86,8 @@ void rcv_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 			boundbuffer->Deposit(std::string(buffer));
 		}
 	}
+
+	//bool c = false;
 }
 
 void send_tcp_msg(const std::string& msg, sf::TcpSocket* sock)
@@ -114,6 +120,8 @@ void snd_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* buff, bool& quit)
 		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
+
+	//bool c = false;
 }
 
 

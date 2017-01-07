@@ -29,6 +29,18 @@ public:
 private:
 	void LoadLevel();
 	void ClearGameObjects();
+	void CreateGameObject(
+		ID::Type typeId,
+		float frameSzX,
+		float frameSzY,
+		float xpos,
+		float ypos,
+		ID::Texture texID,
+		int texPosX,
+		int texPosY,
+		bool active = true,
+		float scale = 1.0f
+		);
 
 private:
 	std::vector<GameObject*> m_GameObjects;
