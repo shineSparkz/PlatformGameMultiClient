@@ -15,8 +15,7 @@
 #include "NetPackets.h"
 
 #define BUFF_SIZE		512
-#define TCP_PORT		28000
-#define UDP_PORT		23000
+#define TCP_SERVER_PORT		28000
 
 class MessageParser;
 
@@ -26,21 +25,22 @@ public:
 	NetworkManager();
 	~NetworkManager();
 
-	bool connectToServer(int onPort, int bufferSize);
+	bool connectToServer(int bufferSize);
 	void disconnectFromServer();
+	
 	void sendUdp(const std::string& msg);
 	void sendTcp(const std::string& msg);
-
 	void fetchAllMessages();
 
 	int playerId()const;
 	int clientId()const;
 	int playerExp()const;
 	bool connected() const;
+	const std::string& serverIpAddr() const;
 
 private:
-	friend class LobbyScene;//TODO
-	friend class MessageParser;//TODO
+	// We only want the parser to change data in this class
+	friend class MessageParser;
 
 	MessageParser* m_MsgParser;
 

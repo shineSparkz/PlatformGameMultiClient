@@ -4,7 +4,6 @@
 #include "EventHandler.h"
 #include "EventId.h"
 
-
 class Event
 {
 public:

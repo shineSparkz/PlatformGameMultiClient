@@ -280,7 +280,7 @@ void LobbyScene::LoginToServer()
 			NetworkManager::Instance()->sendTcp(g_sBuffer.GetString());
 
 			// Save these credentials here everytime they try and log in
-			PlayerCredentialsFile::SaveFile(m_UserName.length(), m_UserName.c_str(), m_PassWordName.length(), m_PassWordName.c_str());
+			PlayerCredentialsFile::SaveFile((int)m_UserName.length(), m_UserName.c_str(), (int)m_PassWordName.length(), m_PassWordName.c_str());
 		}
 		else
 		{
@@ -295,7 +295,7 @@ void LobbyScene::ConnectToServer()
 
 	if (!nm->connected())
 	{
-		if (!nm->connectToServer(TCP_PORT, 35))
+		if (!nm->connectToServer(50))
 		{
 			m_UserInfoStr = "Failed to connect to server";
 			// TODO LOG
@@ -424,7 +424,7 @@ void LobbyScene::OnRender()
 
 	if (netMan)
 	{
-		m_ServerInfoStrings[ServerInfo::CurrentIP] = "Server IP: " + netMan->m_ServerIPAddr;
+		m_ServerInfoStrings[ServerInfo::CurrentIP] = "Server IP: " + netMan->serverIpAddr();
 		m_ServerInfoStrings[ServerInfo::Connected] = "Connected to server: " + util::bool_to_str(netMan->connected());
 		m_ServerInfoStrings[ServerInfo::UserName] = "UserName: " + m_UserName;
 		m_ServerInfoStrings[ServerInfo::Password] = "password: " + m_PassWordName;

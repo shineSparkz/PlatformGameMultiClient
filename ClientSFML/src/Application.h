@@ -36,6 +36,7 @@ public:
 	const ResourceHolder<sf::Texture, ID::Texture>& GetTexHolder() const;
 
 private:
+	bool LoadResources();
 	void ProcessEvents();
 	void HandleInput(int key, int action);
 	void Render();

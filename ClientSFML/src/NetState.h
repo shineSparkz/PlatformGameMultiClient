@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+// Wrapper for an object update sent over network
 struct NetState
 {
 	Vec2 position;

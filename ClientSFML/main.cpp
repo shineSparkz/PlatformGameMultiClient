@@ -1,6 +1,5 @@
 #include "src\Application.h"
 
-
 #include "src\PlayerCredentialsBin.h"
 #include <string>
 
@@ -13,15 +12,16 @@ int main()
 #endif
 	//---------------------
 
-	Application app;
+	Application* app = new Application();
 
-	if (!app.Init("Game Client"))
+	if (!app->Init("Game Client"))
 	{
-		app.Close();
+		SAFE_CLOSE(app);
 		return -1;
 	}
 
-	app.Run();
+	app->Run();
+	SAFE_CLOSE(app);
 	
 	return 0;
 }

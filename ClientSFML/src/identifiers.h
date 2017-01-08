@@ -123,6 +123,7 @@ namespace ID
 		CheckpointTorch,
 		Potions,
 		GoldSkull,
+		HealthHUD,
 
 		// Art
 		LevelSelectScreenArt,

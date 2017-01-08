@@ -15,7 +15,9 @@ class LobbyScene : public IScene, public EventHandler
 		EnterPassword,				
 		CreateAccount,				// For new client when entered creds
 		Login,
-		StartGame,					// Start a game after connect
+		StartGame,		   // Start a game after connect
+		// Show leaderboards
+		// Disconnect,
 		Return,
 		NumLobbyOptions,
 	};

@@ -1,6 +1,2 @@
 ﻿  GameScene.cpp
-c:\documentsc\university\year3\multi\demongame\platformgamemulticlient\clientsfml\src\gamescene.cpp(138): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  utils.cpp
   ClientSFML.vcxproj -> C:\DocumentsC\university\year3\multi\DemonGame\PlatformGameMultiClient\\bin\Debug_x86\ClientSFML.exe

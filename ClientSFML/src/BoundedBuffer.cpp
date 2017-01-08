@@ -42,10 +42,9 @@ std::string BoundedBuffer::Fetch()
 	notemptycon_.wait(l, [&]() {return count_ != 0; });
 
 	std::string result = buffer_[front_];
-	//size_t result = (size_t)front_;
 	front_ = (front_ + 1) % capacity_;
 	--count_;
 
 	notfullcon_.notify_one();
-	return result;// &buffer_[result];
+	return result;
 }

@@ -10,13 +10,6 @@
 #include "TitleScene.h"
 #include "LobbyScene.h"
 #include "LeaderboardScene.h"
-//#include "PauseScene.h"
-//#include "WorldMapScene.h"
-//#include "InventoryScene.h"
-//#include "SoundPlayer.h"
-//#include "ModFile.h"
-//#include "Config.h"
-
 
 const sf::Time FRAME_TIME = sf::seconds(1 / 60.0f);
 const std::string FONT_FILE = "resources/fonts/";
@@ -41,7 +34,6 @@ Application::Application() :
 
 Application::~Application()
 {
-	this->Close();
 }
 
 bool Application::Init(const std::string& app_name)
@@ -53,24 +45,13 @@ bool Application::Init(const std::string& app_name)
 	
 	// Load all settings files
 	KeyBindings::LoadDefaults();
-	
-	//ModFileIni::ParseModIni();
-	//ConfigFile::LoadConfig();
-	
-	//this->m_ShowFPS = ConfigFile::currentConfigInMemory.ShowFPS;
-	
+		
 	new Screen();
 	m_Screen = Screen::Instance();
 	//m_Window = m_Screen->Init(ConfigFile::currentConfigInMemory.FullScreen,
 	//	ConfigFile::currentConfigInMemory.VideoMode,
 	//	ConfigFile::currentConfigInMemory.Vsync);
-	m_Window = m_Screen->Init(false, 6, true);	// TODO SORT THIS
-
-	// Singletons
-	//SoundPlayer* sp = new SoundPlayer();
-	//if (!sp->LoadAllSounds()) return false;
-	//sp->SetMusicVolume(ConfigFile::currentConfigInMemory.MusicVolume);
-	//sp->SetSFXVolume(ConfigFile::currentConfigInMemory.SFXVolume);
+	m_Window = m_Screen->Init(false, 2, true);	// TODO SORT THIS
 	
 	// Create Events
 	new EventManager();
@@ -79,42 +60,11 @@ bool Application::Init(const std::string& app_name)
 		RegisterEvent(static_cast<EventID>(i) );
 	}
 
-	// Load Textures
-	if (m_TextureHolder.Load(ID::Texture::LevelExit, "resources/textures/exit.png") != GE_OK) return false;
-	if(m_TextureHolder.Load(ID::Texture::Bkgrnd_BlackTiles, "resources/textures/bg_black_tiles.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_GreenGraveyard, "resources/textures/bg_green_graveyard.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_PurpleCave, "resources/textures/bg_purple_cave.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_RedMtn, "resources/textures/bg_red_mtn.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_Pyramid, "resources/textures/bg_pyramid.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Slime, "resources/textures/slime.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::LevelSelectScreenArt, "resources/textures/dc_art.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::TitleScreenArt, "resources/textures/pause.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::PauseScreenArt, "resources/textures/title.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::DestructableWall, "resources/textures/box.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Boulder, "resources/textures/boulder.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::DissappearPlatform, "resources/textures/dis_plat.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::GoldSkull, "resources/textures/goldskull.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::SkullBg, "resources/textures/skull_bg.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::BloodMtn_TileSet, "resources/textures/red_tileset.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::White_TileSet, "resources/textures/white_tileset.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Player, "resources/textures/player.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Spikes, "resources/textures/spikes.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::SkullCurrency, "resources/textures/skull_currency.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Fireball, "resources/textures/fireball.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::BlueMinionEnemy, "resources/textures/minion_45x66.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::MageEnemy, "resources/textures/mage_enemy122x110.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::DiscipleEnemy, "resources/textures/disciple_enemy45x51.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::TaurusEnemy, "resources/textures/gnu-120x100.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::ShadowEnemy, "resources/textures/shadow-80x70.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::GreemHeadEnemy, "resources/textures/andromalius-57x88.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::ProjectileEnemy, "resources/textures/mage_bullet_13x13.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::CheckpointTorch, "resources/textures/checkpoint.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Potions, "resources/textures/potions.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::WorldMapArt, "resources/textures/25.png") != GE_OK) return false;
-
-	// Load Fonts
-	if(m_FontHolder.Load(ID::Font::ARIEL, FONT_FILE + "arial.ttf") != GE_OK) return false;
-	if(m_FontHolder.Load(ID::Font::GOTHIC, FONT_FILE + "olde_english.ttf") != GE_OK) return false;
+	// Load resources
+	if (!this->LoadResources())
+	{
+		WRITE_LOG("Resource load failed", "error");
+	}
 
 	if (!m_TextObj)
 	{
@@ -123,32 +73,25 @@ bool Application::Init(const std::string& app_name)
 		m_TextObj->setCharacterSize(24);
 	}
 
-	// Create States ( this shouldn't be here)
+	// Create States
 	m_SceneGraph = new SceneGraph(new IScene::Context(*m_Window, m_Screen->m_MainView, m_TextureHolder, m_FontHolder));
 	GameScene gam;
 	TitleScene tit;
 	LobbyScene lob;
 	LeaderboardScene lbd;
-	//PauseState pas;
-	//WorldMapState wm;
-	//InventoryState inv;
 
 	m_SceneGraph->RegisterState(ID::States::Game, gam);
 	m_SceneGraph->RegisterState(ID::States::Title, tit);
 	m_SceneGraph->RegisterState(ID::States::Lobby, lob);
 	m_SceneGraph->RegisterState(ID::States::Leaderboards, lbd);
-	//m_SceneGraph->RegisterState(ID::States::WorldMap, wm);
-	//m_SceneGraph->RegisterState(ID::States::Inventory, inv);
 
 	m_SceneGraph->Init();
 	ChangeState(ID::States::Title);
 
+	// Create net manager
 	if (!m_NetManager)
 	{
 		m_NetManager = new NetworkManager();
-
-		//m_NetManager->connectToServer(TCP_PORT, 35);
-		// TODO : print if error 
 	}
 
 	return true;
@@ -277,11 +220,6 @@ void Application::Close()
 
 	m_LogFile.WriteLog("Application has Shut Down gracefully", "good");
 
-	//if ( SoundPlayer::Instance() )
-	//{
-	//	delete SoundPlayer::Instance();
-	//}
-
 	if ( m_Screen )
 	{
 		delete Screen::Instance();
@@ -329,41 +267,55 @@ void Application::HandleInput(int k, int a)
 		}
 	}
 
-	if (k == KeyBindings::ReservedMenuKey && a == RELEASE)// &&m_AppHasFocus)
-	{
-		if (m_Event.key.code == sf::Keyboard::F4)
-			m_F4Key = true;
-		if (m_Event.key.code == sf::Keyboard::LAlt)
-			m_AltKey = true;
+	if (m_Event.key.code == sf::Keyboard::F4)
+		m_F4Key = true;
+	if (m_Event.key.code == sf::Keyboard::LAlt)
+		m_AltKey = true;
 
-		if (GetActiveState() != ID::States::Pause)
-		{
-			//SoundPlayer::Instance()->PlayASound(ID::Audio::PauseSound);
-			//ChangeState(ID::States::Pause);
-		}
-		else
-		{
-			//if (!PauseState::IsBindingKeys())
-			//{
-			//	SoundPlayer::Instance()->PlayASound(ID::Audio::UnPauseSound);
-			//	ChangeState(GetPrevState());
-			//}
-			//else
-			//{
-				this->m_SceneGraph->HandleInput(k, a);
-			//}
-		}
-	}
-	else if (k == KeyBindings::ReservedPauseKey && a == RELEASE && m_SceneGraph->GetActiveState() == ID::States::Game)
-	{
-		//int p = !m_AppHasFocus;
-		//EventManager::Instance()->SendEvent(events::SystemEventID::WindowFocus, &p);
-	}
-	else
-	{
-		//if (m_AppHasFocus)
-		this->m_SceneGraph->HandleInput(k, a);
-	}
+	this->m_SceneGraph->HandleInput(k, a);
+}
+
+bool Application::LoadResources()
+{
+	// Load Textures
+	if (m_TextureHolder.Load(ID::Texture::HealthHUD, "resources/textures/hud_heart.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::LevelExit, "resources/textures/exit.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_BlackTiles, "resources/textures/bg_black_tiles.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_GreenGraveyard, "resources/textures/bg_green_graveyard.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_PurpleCave, "resources/textures/bg_purple_cave.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_RedMtn, "resources/textures/bg_red_mtn.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_Pyramid, "resources/textures/bg_pyramid.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Slime, "resources/textures/slime.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::LevelSelectScreenArt, "resources/textures/dc_art.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::TitleScreenArt, "resources/textures/pause.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::PauseScreenArt, "resources/textures/title.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::DestructableWall, "resources/textures/box.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Boulder, "resources/textures/boulder.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::DissappearPlatform, "resources/textures/dis_plat.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::GoldSkull, "resources/textures/goldskull.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::SkullBg, "resources/textures/skull_bg.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::BloodMtn_TileSet, "resources/textures/red_tileset.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::White_TileSet, "resources/textures/white_tileset.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Player, "resources/textures/player.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Spikes, "resources/textures/spikes.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::SkullCurrency, "resources/textures/skull_currency.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Fireball, "resources/textures/fireball.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::BlueMinionEnemy, "resources/textures/minion_45x66.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::MageEnemy, "resources/textures/mage_enemy122x110.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::DiscipleEnemy, "resources/textures/disciple_enemy45x51.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::TaurusEnemy, "resources/textures/gnu-120x100.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::ShadowEnemy, "resources/textures/shadow-80x70.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::GreemHeadEnemy, "resources/textures/andromalius-57x88.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::ProjectileEnemy, "resources/textures/mage_bullet_13x13.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::CheckpointTorch, "resources/textures/checkpoint.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Potions, "resources/textures/potions.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::WorldMapArt, "resources/textures/25.png") != GE_OK) return false;
+
+	// Load Fonts
+	if (m_FontHolder.Load(ID::Font::ARIEL, FONT_FILE + "arial.ttf") != GE_OK) return false;
+	if (m_FontHolder.Load(ID::Font::GOTHIC, FONT_FILE + "olde_english.ttf") != GE_OK) return false;
+
+	return true;
 }
 
 

@@ -5,22 +5,6 @@
 
 enum EventID
 {
-	/*
-	// Gameplay
-	FinishLevel,
-	PlayerDead,
-	SetLevelToLoad,
-	BossTriggered,
-	PlayerCollidingWithExit,
-	CheckpointActivate,
-	CollectGoldSkull,
-	LoadGameStartup,
-	GainExperience,
-	SaveGameData,
-	LoadGameData,
-	LoadGameDefaults,
-	*/
-
 	LoadLevelData,
 
 	// Network accounts
@@ -31,6 +15,7 @@ enum EventID
 	// Network
 	Net_NewGameObject,
 	Net_UpdateGameObject,
+	Net_PlayerHealth,
 
 	NumGameEvents
 };

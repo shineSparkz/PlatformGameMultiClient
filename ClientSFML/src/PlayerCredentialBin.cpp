@@ -16,8 +16,8 @@ void PlayerCredentialsFile::SaveFile(int sizename, const char* name, int sizePw,
 
 	memset(&pc.name, 0, MAX_NAME_CHARS);
 	memset(&pc.password, 0, MAX_NAME_CHARS);
-	strcpy(pc.name, name);
-	strcpy(pc.password, pw);
+	strcpy_s(pc.name, name);
+	strcpy_s(pc.password, pw);
 	
 	std::ofstream binout("resources/data/pc.dat", std::ios::out | std::ios::binary);
 	binout.write(reinterpret_cast<char*>(&pc), sizeof(pc));
@@ -34,7 +34,9 @@ PlayerCredentials* PlayerCredentialsFile::LoadFile()
 	byte sizename[2];
 	byte sizepw[2];
 
-	file = fopen("resources/data/pc.dat", "rb");
+	//file = fopen("resources/data/pc.dat", "rb");
+	fopen_s(&file, "resources/data/pc.dat", "rb");
+	
 	if (!file)
 	{
 		WRITE_LOG("Tried to read credetials data but no dat file", "warning");

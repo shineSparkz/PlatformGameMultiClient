@@ -8,6 +8,7 @@
 #include "EventManager.h"
 #include "Application.h"
 #include "MessageParser.h"
+#include "LogFile.h"
 
 const float THREAD_SLEEP = 1 / 60.0f;
 
@@ -31,10 +32,9 @@ void rcv_udp_thread(sf::UdpSocket* sock, BoundedBuffer* boundbuffer, bool& quit)
 		{
 			break;
 		}
-		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
 
-	//bool c = false;
+	//bool c = false;	// Note* these were breakpoint checks to see if all threads were exiting (they were)
 }
 
 void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, const std::string& ipAddr, int port)
@@ -42,10 +42,7 @@ void send_udp_msg(const std::string& msg, sf::UdpSocket* sock, const std::string
 	unsigned char buffer[BUFF_SIZE];
 	memset(buffer, 0, BUFF_SIZE);
 	memcpy(buffer, msg.c_str(), msg.length());
-
-	if (sock->send(&buffer, BUFF_SIZE, ipAddr, port) != sf::Socket::Done)
-	{
-	}
+	sock->send(&buffer, BUFF_SIZE, ipAddr, port);
 }
 
 void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, const std::string ipAddr, int& serverUdpPort)
@@ -62,8 +59,8 @@ void snd_udp_thread(sf::UdpSocket* sock, BoundedBuffer* buff, bool& quit, const 
 			}
 		}
 
+		// Sleep for 1 frame
 		std::this_thread::sleep_for(std::chrono::milliseconds(16));
-		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
 
 	//bool c = false;
@@ -116,9 +113,7 @@ void snd_tcp_thread(sf::TcpSocket* sock, BoundedBuffer* buff, bool& quit)
 			}
 		}
 
-		// That many millis in one frame
 		std::this_thread::sleep_for(std::chrono::milliseconds(16));
-		//std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP));// FRAME_TIME.asSeconds()));
 	}
 
 	//bool c = false;
@@ -156,7 +151,7 @@ NetworkManager::~NetworkManager()
 	this->disconnectFromServer();
 }
 
-bool NetworkManager::connectToServer(int onPort, int buffSize)
+bool NetworkManager::connectToServer(int buffSize)
 {
 	if (!m_TcpSock)
 	{
@@ -180,7 +175,7 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 
 		if (broadCastStatus != sf::Socket::Status::Done)
 		{
-			// TODO Log
+			WRITE_LOG("Problem sending data through broadcast socket", "error");
 			return false;
 		}
 		
@@ -189,7 +184,7 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 		// Attempt to connect for a few seconds
 		float t = 0.0f;
 		bool connectedToBcast = false;
-		while (t < 5.0f)
+		while (t < 1800.0f)
 		{
 			sf::Socket::Status broadcast_status = broadcast_socket.receive(&rcv_buff, 32, received_bytes, remote_ip, remote_port);
 			if (broadcast_status == sf::Socket::Status::Done)
@@ -202,21 +197,24 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 		}
 
 		if (!connectedToBcast)
+		{
+			WRITE_LOG("Could not get a connection to broadcast socket, did not receive any data", "error");
 			return false;
+		}
 
+		// Attempt to connect to server now
 		std::string server_address = remote_ip.toString();
 		
-		// Attempt to connect to server now
 		m_TcpSock = new sf::TcpSocket();
 		m_TcpSock->setBlocking(true);
 
 		m_BoundedBuffSize = buffSize;
 
-		sf::Socket::Status status = m_TcpSock->connect(server_address, onPort);
+		sf::Socket::Status status = m_TcpSock->connect(server_address, TCP_SERVER_PORT);
 
 		if (status != sf::Socket::Status::Done)
 		{
-			// TODO : Log
+			WRITE_LOG("Could not connect TCP socket", "error");
 			SAFE_DELETE(m_TcpSock);
 			return false;
 		}
@@ -224,31 +222,8 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 		// Now we have connection, store servers address for UDP
 		m_ServerIPAddr = server_address;
 
-		/*
-		switch (status)
-		{
-		case sf::Socket::Status::Done:
-		update_ui_info(info_q, "Sock Done");
-		break;
-		case sf::Socket::Status::NotReady:
-		update_ui_info(info_q, "Sock Not ready");
-		break;
-		case sf::Socket::Status::Partial:
-		update_ui_info(info_q, "Sock partial");
-		break;
-		case sf::Socket::Status::Disconnected:
-		update_ui_info(info_q, "Sock disconnected");
-		break;
-		case sf::Socket::Status::Error:
-		update_ui_info(info_q, "Sock error");
-		break;
-		}
-		*/
-
-		//if (g_ShouldPrintUI)
-		//	update_ui_info(info_q, "Local TCP port: " + std::to_string(tcp_sock.getLocalPort()));
-
 		// Log : Connected to server at {ip} : {port}
+		WRITE_LOG("Connected to server on ip: " + m_ServerIPAddr, "good");
 
 		// Create Buffers now we have a connection
 		m_UdpRcvBuffer = new BoundedBuffer(m_BoundedBuffSize);
@@ -266,10 +241,9 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 
 		// Get system to set free port
 		//m_UdpSock->bind(sf::Socket::AnyPort);	// For some reason this was not working in certain situations
-		//32767
 		m_UdpSock->bind(0);
 		m_LocalUdpPort = m_UdpSock->getLocalPort();
-		// TODO : Log port
+		WRITE_LOG("Attempting to bind upd socket on local port: " + std::to_string(m_LocalUdpPort), "none");
 
 		// Finally spin all other threads
 		m_TcpSndThread = new std::thread(snd_tcp_thread, std::ref(m_TcpSock), std::ref(m_TcpSndBuffer), std::ref(m_Quit));
@@ -286,14 +260,16 @@ bool NetworkManager::connectToServer(int onPort, int buffSize)
 	}
 	else
 	{
-		// TODO : Log
+		WRITE_LOG("Tried to connect to server twice", "warning");
 		return false;
 	}
 }
 
 void NetworkManager::disconnectFromServer()
 {
-	m_Quit = true;	// Close all threads
+	// Close all threads
+	m_Quit = true;	
+
 	m_Connected = false;
 	m_LocalUdpPort = -1;
 	m_ServerUdpPort = -1;
@@ -301,8 +277,6 @@ void NetworkManager::disconnectFromServer()
 	m_BoundedBuffSize = -1;
 	m_PlayerHandle = -1;
 	m_ServerIPAddr.clear();
-
-	// Need to wait until all threads are done here
 
 	if (m_TcpSock)
 	{
@@ -420,4 +394,9 @@ int NetworkManager::clientId()const
 int NetworkManager::playerExp()const
 {
 	return m_PlayerExp;
+}
+
+const std::string& NetworkManager::serverIpAddr() const
+{
+	return m_ServerIPAddr;
 }

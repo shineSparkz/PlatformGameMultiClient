@@ -45,10 +45,11 @@ private:
 private:
 	std::vector<GameObject*> m_GameObjects;
 	sf::Sprite* m_BackgroundSprite;
+	sf::Sprite* m_HealthSprite;
 	sf::Text* m_TextObject;
 
 	size_t m_PlayerHandle;
-	bool m_SceneReady = false;
+	int m_PlayerHealth = 4;
 };
 
 #endif

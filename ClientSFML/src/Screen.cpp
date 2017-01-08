@@ -291,7 +291,7 @@ void Screen::RenderText(sf::RenderWindow* window, sf::Text* TextObj, const std::
 		}
 
 		TextObj->setPosition(pos);
-		TextObj->setColor(colour);
+		TextObj->setFillColor(colour);
 		TextObj->setStyle(style);
 		window->draw(*TextObj);
 	}

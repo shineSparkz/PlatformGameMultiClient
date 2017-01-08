@@ -8,6 +8,8 @@
 #include "GameObject.h"
 #include "NetState.h"
 #include "Screen.h"
+#include "LogFile.h"
+#include "utils.h"
 
 MessageParser::~MessageParser()
 {
@@ -24,9 +26,9 @@ bool MessageParser::Init()
 	m_MsgMap[Packet::ID::IN_TCP_LeaderboardRequest] = MessageParser::tcp_leaderboard_request;
 
 	m_MsgMap[Packet::ID::IN_UDP_UpdatedObject] = MessageParser::udp_update_object;
-	m_MsgMap[Packet::ID::IN_UDP_ViewUpdate] = MessageParser::upd_view_update;
+	m_MsgMap[Packet::ID::IN_UDP_ViewUpdate] = MessageParser::udp_view_update;
+	m_MsgMap[Packet::ID::IN_UPD_PlayerHealth] = MessageParser::udp_player_health;
 
-	//... etc
 
 	return true;
 }
@@ -41,7 +43,7 @@ void MessageParser::Parse(const rapidjson::Document& jd)
 
 			if (m_MsgMap.find(packetName) == m_MsgMap.end())
 			{
-				// Log error
+				WRITE_LOG("The packet name: " + util::to_str((int)packetName) + " is unknown", "error");
 				return;
 			}
 
@@ -50,7 +52,7 @@ void MessageParser::Parse(const rapidjson::Document& jd)
 	}
 }
 
-
+// ---- TCP Function Pointers ----
 void MessageParser::tcp_connect(const rapidjson::Document& jd)
 {
 	// Reg
@@ -58,7 +60,7 @@ void MessageParser::tcp_connect(const rapidjson::Document& jd)
 	NetworkManager::Instance()->m_ServerUdpPort = jd["udpPort"].GetInt();
 
 	// Send First udp msg
-	NetworkManager::Instance()->m_UdpSndBuffer->Deposit(std::to_string(NetworkManager::Instance()->m_ClientId) + ":UDP:0");
+	NetworkManager::Instance()->sendUdp(std::to_string(NetworkManager::Instance()->clientId()) + ":UDP:0");
 }
 
 void MessageParser::tcp_server_msg(const rapidjson::Document& jd)
@@ -110,13 +112,14 @@ void MessageParser::tcp_start_game(const rapidjson::Document& jd)
 		}
 	}
 
-	// Get Array of objects (could be one)
+	// Get Array of player objects (could only be one)
 	if (jd.HasMember("objects"))
 	{
 		if (jd["objects"].IsArray())
 		{
 			auto client_array = jd["objects"].GetArray();
 
+			// Only load level if we have started game (we could be online and in lobby and still get this)
 			if (GetActiveState() == ID::States::Lobby && loadLevel)
 			{
 				// Tell Lobby to move to game state
@@ -223,14 +226,12 @@ void MessageParser::tcp_finish_level(const rapidjson::Document& jd)
 		}
 	}
 
-	// TODO : Display exp
 	NetworkManager::Instance()->m_PlayerExp = exp;
 
 	// Move back to lobby
 	if (GetActiveState() == ID::States::Game)
 	{
-		// TODO : Tell the game state to re-load the original level data
-
+		// All of the game data will unload here, but will be pre-loaded again once we enter the lobby
 		ChangeState(ID::States::Lobby);
 	}
 }
@@ -247,15 +248,11 @@ void MessageParser::tcp_exp_queery(const rapidjson::Document& jd)
 		}
 	}
 
-	// TODO : Display exp
 	NetworkManager::Instance()->m_PlayerExp = exp;
-
-	// Send Event
 }
 
 void MessageParser::tcp_leaderboard_request(const rapidjson::Document& jd)
 {
-	// This is actualy only a call back for a failed start game, for sucess we just load the map and inform the lobby
 	std::string msg = "Error";
 	if (jd.IsObject())
 	{
@@ -268,11 +265,11 @@ void MessageParser::tcp_leaderboard_request(const rapidjson::Document& jd)
 		}
 	}
 
-	// Inform lobby on net manager
+	// Inform Leaderboard scene about this data
 	SendEvent(EventID::Net_DatabaseRequest, &msg);
 }
 
-
+// ---- UDP Function pointers ----
 void MessageParser::udp_update_object(const rapidjson::Document& jd)
 {
 	if (jd["name"].IsInt())
@@ -410,7 +407,7 @@ void MessageParser::udp_update_object(const rapidjson::Document& jd)
 	}
 }
 
-void MessageParser::upd_view_update(const rapidjson::Document& jd)
+void MessageParser::udp_view_update(const rapidjson::Document& jd)
 {
 	float x = 0;
 	float y = 0;
@@ -441,4 +438,20 @@ void MessageParser::upd_view_update(const rapidjson::Document& jd)
 
 	Screen::Instance()->SetViewCentre(Vec2(x, y));
 }
+
+void MessageParser::udp_player_health(const rapidjson::Document& jd)
+{
+	int health = 0;
+
+	if (jd.HasMember("health"))
+	{
+		if (jd["health"].IsInt())
+		{
+			health = jd["health"].GetInt();
+		}
+	}
+	
+	SendEvent(EventID::Net_PlayerHealth, &health);
+}
+
 

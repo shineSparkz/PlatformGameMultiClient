@@ -19,7 +19,6 @@ void EventManager::SendEvent(EventID eventId, void* pData)
 	EventMapIter result = mEventMap.find(eventId);
 	if (result != mEventMap.end())
 	{
-		//assert(result->second);
 		if (result->second)
 		{
 			result->second->Send(pData);
@@ -32,7 +31,6 @@ void EventManager::SendEventToHandler(EventID eventId, EventHandler& eventHandle
 	EventMapIter result = mEventMap.find(eventId);
 	if (result != mEventMap.end())
 	{
-		assert(result->second);
 		if (result->second)
 		{
 			result->second->SendToHandler(eventHandler, pData);
@@ -64,10 +62,8 @@ bool EventManager::RegisterEvent(EventID eventId)
 void EventManager::AttachEvent(EventID eventId, EventHandler& eventHandler)
 {
 	EventMapIter result = mEventMap.find(eventId);
-	//assert(result != mEventMap.end());
 	if (result != mEventMap.end())
 	{
-		//assert(result->second);
 		result->second->AttachListener(eventHandler);
 	}
 }
@@ -75,10 +71,8 @@ void EventManager::AttachEvent(EventID eventId, EventHandler& eventHandler)
 void EventManager::DetachEvent(EventID eventId, EventHandler& eventHandler)
 {
 	EventMapIter result = mEventMap.find(eventId);
-	//assert(result != mEventMap.end());
 	if (result != mEventMap.end())
 	{
-		//assert(result->second);
 		result->second->DetachListener(eventHandler);
 	}
 }
