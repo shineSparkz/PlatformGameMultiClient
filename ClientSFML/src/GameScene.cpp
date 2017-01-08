@@ -42,6 +42,7 @@ void GameScene::HandleEvent(Event* event_)
 			{
 				GameObject* newGO = new GameObject();
 				newGO->m_Sprite = go->m_Sprite;
+				newGO->m_Sprite.setPosition(Vec2(64, 64));
 				newGO->m_TypeId = go->m_TypeId;
 				newGO->m_UniqueId = go->m_UniqueId;
 				newGO->m_FrameSizeX = go->m_FrameSizeX;
@@ -146,9 +147,6 @@ void GameScene::LoadLevel()
 				Vec2 tile_pos = Vec2(static_cast<float>(x * CellSize),
 					static_cast<float> (y * CellSize));
 
-				// We don't care what it returns
-				//this->InstantiateGameObject(type, tile_pos, Vec2(1.0f, 1.0f));
-
 				switch (type)
 				{
 				case ID::Type::DestructablePlatform:
@@ -204,38 +202,7 @@ void GameScene::LoadLevel()
 		}
 	}
 
-	/*
-	for (int i = 0; i < 12; ++i)
-	{
-		// Create Object from parsed data
-		this->CreateGameObject(ID::Type::Wall, 64, 64, (float)i * 64, 450, ID::Texture::BloodMtn_TileSet, 64, 64);
-	}
-
-	// One more wall
-	this->CreateGameObject(ID::Type::Wall, 64, 64, 7 * 64, 350, ID::Texture::BloodMtn_TileSet, 64, 64);
-
-	// Blue Minion Enemy
-	this->CreateGameObject(ID::Type::EnemyBlueMinion, 45, 66, 200, 200, ID::Texture::BlueMinionEnemy, 0, 0);
-
-	// Exit
-	this->CreateGameObject(ID::Type::Exit, 768/6, 630/5, 14*64, 400, ID::Texture::LevelExit, 0, 2 * (630/5));
-
-	// Collect Skull
-	this->CreateGameObject(ID::Type::GoldSkull, 32, 32, 10*64, 200, ID::Texture::GoldSkull, 0, 0);
-
-	// Shadow Enemy
-	this->CreateGameObject(ID::Type::EnemyShadow, 80, 70, 300, 450-64, ID::Texture::ShadowEnemy, 0, 0);
-
-	// Disciple
-	this->CreateGameObject(ID::Type::EnemyDisciple, 45, 51, 370, 450 - 64, ID::Texture::DiscipleEnemy, 0, 0, true, 2.0f);
-
-	// Destroy Box
-	this->CreateGameObject(ID::Type::DestructablePlatform, 64, 64, 590, 450-64, ID::Texture::DestructableWall, 0, 0);
-
-	// Spike
-	this->CreateGameObject(ID::Type::Spike, 32, 32, 520, 450-64, ID::Texture::Spikes, 0, 0, true, 2.0f);
-	*/
-	// Bullets last
+	// Bullets pool last
 	for (int i = 0; i < 10; ++i)
 	{
 		this->CreateGameObject(ID::Type::PlayerProjectile, 32, 32, 0, 0, ID::Texture::Fireball, 64, 64, false);
@@ -338,8 +305,6 @@ bool GameScene::OnUpdate(const sf::Time& dt)
 
 void GameScene::HandleInput(int k, int a)
 {
-	//57 is space
-	// TODO : Put this in a network component
 	if (NetworkManager::Instance()->connected())
 	{
 		rapidjson::StringBuffer g_sBuffer;
@@ -359,7 +324,6 @@ void GameScene::HandleInput(int k, int a)
 		NetworkManager::Instance()->sendUdp(g_sBuffer.GetString());
 
 		// Predict Locally
-		/*
 		size_t playerId = (size_t)NetworkManager::Instance()->playerId();
 		if (k == sf::Keyboard::D)
 			m_GameObjects[playerId]->m_Sprite.move(3.0f, 0.0f);
@@ -367,9 +331,6 @@ void GameScene::HandleInput(int k, int a)
 			m_GameObjects[playerId]->m_Sprite.move(-3.0f, 0.0f);
 		else if (k == sf::Keyboard::W)
 			m_GameObjects[playerId]->m_Sprite.move(0.0f, -3.0f);
-		*/
-		//else if (k == sf::Keyboard::S)
-		//	m_GameObjects[playerId]->m_Sprite.move(0.0f, 3.0f);	// I have left this on purpose for testing
 	}
 }
 
