@@ -9,9 +9,7 @@ class TitleScene : public IScene
 {
 	enum Options
 	{
-		Multiplayer,
-		Settings,
-		LeaderBoards,
+		EnterLobby,
 		Quit,
 		OptionSize
 	};
@@ -34,10 +32,10 @@ private:
 	sf::Sprite* m_BgSprite;
 	sf::Text* m_TextObject;
 
-	std::string m_OptionStrings[4];
+	std::string m_OptionStrings[2];
 	std::string m_UserInfoStr;
 
-	Options m_Options = Options::Multiplayer;
+	Options m_Options = Options::EnterLobby;
 	MenuState m_MenuState = MenuState::Normal;
 
 	int CONFIRM_BUTTON;

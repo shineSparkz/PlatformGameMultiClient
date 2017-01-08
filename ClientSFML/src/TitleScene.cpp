@@ -13,7 +13,7 @@ TitleScene::TitleScene() :
 	m_TextObject(nullptr),
 	m_OptionStrings(),
 	m_UserInfoStr(""),
-	m_Options(Options::Multiplayer),
+	m_Options(Options::EnterLobby),
 	m_MenuState(MenuState::Normal),
 	CONFIRM_BUTTON(0),
 	CANCEL_BUTTON(0)
@@ -34,10 +34,8 @@ bool TitleScene::OnCreate(Context* const con)
 	m_BgSprite->setTexture(m_context->textures->Get(ID::Texture::TitleScreenArt));
 	m_BgSprite->setScale(Vec2(0.8f, 0.8f));
 
-	m_OptionStrings[0] = "Multiplayer";
-	m_OptionStrings[1] = "Settings";
-	m_OptionStrings[2] = "LeaderBoards";
-	m_OptionStrings[3] = "Quit Game";
+	m_OptionStrings[0] = "Enter Lobby";
+	m_OptionStrings[1] = "Quit Game";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();
@@ -137,7 +135,7 @@ void TitleScene::HandleInput(int k, int a)
 				--selopt;
 				m_Options = (Options)selopt;
 
-				if (m_Options < Options::Multiplayer)
+				if (m_Options < Options::EnterLobby)
 					m_Options = Options::Quit;
 			}
 		}
@@ -152,7 +150,7 @@ void TitleScene::HandleInput(int k, int a)
 				++selopt;
 				m_Options = (Options)selopt;
 				if (m_Options > Options::Quit)
-					m_Options = Options::Multiplayer;
+					m_Options = Options::EnterLobby;
 			}
 		}
 
@@ -175,7 +173,7 @@ void TitleScene::HandleInput(int k, int a)
 
 			switch (m_Options)
 			{
-			case Options::Multiplayer:
+			case Options::EnterLobby:
 				if (m_MenuState == Normal)
 				{
 					m_MenuState = Pending;
@@ -193,13 +191,6 @@ void TitleScene::HandleInput(int k, int a)
 					m_UserInfoStr = "";
 				}
 				break;
-			case Options::Settings:
-				//SoundPlayer::Instance()->PlayASound(ID::Audio::PauseSound);
-				//ChangeState(ID::States::Pause, false);
-				break;
-			case Options::LeaderBoards:
-				ChangeState(ID::States::Leaderboards, false);
-				break;
 			case Options::Quit:
 				quit = true;
 				break;
@@ -209,8 +200,6 @@ void TitleScene::HandleInput(int k, int a)
 
 			if (!quit)
 			{
-				//SoundPlayer::Instance()->PlayASound(ID::Audio::SelectSound);
-
 				if (m_MenuState != Pending)
 				{
 					ChangeState(ID::States::Lobby, false);

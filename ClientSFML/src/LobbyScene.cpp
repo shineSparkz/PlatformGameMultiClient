@@ -143,7 +143,6 @@ void LobbyScene::HandleInput(int k, int a)
 			{
 				if (m_MenuState != Pending)
 				{
-					//SoundPlayer::Instance()->PlayASound(ID::Audio::UI_Select);
 					int selopt = (int)m_Options;
 					++selopt;
 					m_Options = (LobbyOptions)selopt;
@@ -157,7 +156,6 @@ void LobbyScene::HandleInput(int k, int a)
 			{
 				if (m_MenuState == Pending)
 				{
-					//SoundPlayer::Instance()->PlayASound(ID::Audio::SelectSound);
 					m_MenuState = Normal;
 					m_UserInfoStr = "";
 				}
@@ -187,6 +185,9 @@ void LobbyScene::HandleInput(int k, int a)
 					break;
 				case LobbyOptions::StartGame:
 					this->AttemptToStartGame();
+					break;
+				case LobbyOptions::Leaderboards:
+					ChangeState(ID::States::Leaderboards);
 					break;
 				case LobbyOptions::Return:
 					if (NetworkManager::Instance()->connected())
@@ -255,8 +256,6 @@ void LobbyScene::LoginToServer()
 	else
 	{
 		NetworkManager* nm = NetworkManager::Instance();
-
-		// TODO : Need to check if we already logged in
 		if (nm->connected())
 		{
 			// Send data to server
@@ -298,7 +297,6 @@ void LobbyScene::ConnectToServer()
 		if (!nm->connectToServer(50))
 		{
 			m_UserInfoStr = "Failed to connect to server";
-			// TODO LOG
 			return;
 		}
 
@@ -337,16 +335,14 @@ bool LobbyScene::OnCreate(Context* const context)
 	AttachEvent(EventID::Net_StartGameCallback, *this);
 	AttachEvent(EventID::Net_ServerMsgCallback, *this);
 
-	//m_ConfigOptions.resize(4);
-	//m_UserInfoStr = "Press Enter to type login details";
-
 	m_OptionStrings[0] = "Connect to Server";
 	m_OptionStrings[1] = "Enter User Name";
 	m_OptionStrings[2] = "Enter Password";
 	m_OptionStrings[3] = "Create Account";
 	m_OptionStrings[4] = "Login to Server";
 	m_OptionStrings[5] = "Start Game";
-	m_OptionStrings[6] = "Return";
+	m_OptionStrings[6] = "View Leaderboards";
+	m_OptionStrings[7] = "Return";
 
 	if (!m_TextObject)
 		m_TextObject = new sf::Text();

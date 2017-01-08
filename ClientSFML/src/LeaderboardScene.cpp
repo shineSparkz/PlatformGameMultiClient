@@ -113,6 +113,6 @@ void LeaderboardScene::HandleInput(int k, int a)
 {
 	if (a == 0)
 	{
-		ChangeState(ID::States::Title);
+		ChangeState(ID::States::Lobby);
 	}
 }

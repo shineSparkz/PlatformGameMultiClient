@@ -15,9 +15,8 @@ class LobbyScene : public IScene, public EventHandler
 		EnterPassword,				
 		CreateAccount,				// For new client when entered creds
 		Login,
-		StartGame,		   // Start a game after connect
-		// Show leaderboards
-		// Disconnect,
+		StartGame,					// Start a game after connect
+		Leaderboards,
 		Return,
 		NumLobbyOptions,
 	};
@@ -56,7 +55,7 @@ private:
 private:
 	sf::Text* m_TextObject;
 
-	std::string m_OptionStrings[7];
+	std::string m_OptionStrings[8];
 	std::string m_ServerInfoStrings[5];
 
 	std::string m_UserInfoStr;
