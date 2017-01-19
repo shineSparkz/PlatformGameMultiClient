@@ -199,7 +199,8 @@ void MessageParser::tcp_start_game(const rapidjson::Document& jd)
 					spr.setPosition(Vec2(x, y));
 					spr.setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Player));
 					spr.setTextureRect(sf::IntRect(0, 0, 64, 64));
-					spr.setScale(Vec2(2.0f, 2.0f));
+					//spr.setScale(Vec2(2.0f, 2.0f));
+					spr.setScale(Vec2(1.5f, 1.5f));
 					go.m_Sprite = spr;
 
 					if (isThisMe == 1)

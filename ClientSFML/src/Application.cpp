@@ -283,7 +283,9 @@ bool Application::LoadResources()
 	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_BlackTiles, "resources/textures/bg_black_tiles.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_GreenGraveyard, "resources/textures/bg_green_graveyard.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_PurpleCave, "resources/textures/bg_purple_cave.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_RedMtn, "resources/textures/bg_red_mtn.png") != GE_OK) return false;
+	//if (m_TextureHolder.Load(ID::Texture::Bkgrnd_RedMtn, "resources/textures/bg_red_mtn.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_RedMtn, "resources/textures/bg.png") != GE_OK) return false;
+
 	if (m_TextureHolder.Load(ID::Texture::Bkgrnd_Pyramid, "resources/textures/bg_pyramid.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::Slime, "resources/textures/slime.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::LevelSelectScreenArt, "resources/textures/dc_art.png") != GE_OK) return false;
@@ -294,9 +296,14 @@ bool Application::LoadResources()
 	if (m_TextureHolder.Load(ID::Texture::DissappearPlatform, "resources/textures/dis_plat.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::GoldSkull, "resources/textures/goldskull.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::SkullBg, "resources/textures/skull_bg.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::BloodMtn_TileSet, "resources/textures/red_tileset.png") != GE_OK) return false;
+	//if (m_TextureHolder.Load(ID::Texture::BloodMtn_TileSet, "resources/textures/red_tileset.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::BloodMtn_TileSet, "resources/textures/tiles.png") != GE_OK) return false;
+
 	if (m_TextureHolder.Load(ID::Texture::White_TileSet, "resources/textures/white_tileset.png") != GE_OK) return false;
-	if (m_TextureHolder.Load(ID::Texture::Player, "resources/textures/player.png") != GE_OK) return false;
+	//if (m_TextureHolder.Load(ID::Texture::Player, "resources/textures/player.png") != GE_OK) return false;
+	if (m_TextureHolder.Load(ID::Texture::Player, "resources/textures/player2.png") != GE_OK) return false;
+
+	
 	if (m_TextureHolder.Load(ID::Texture::Spikes, "resources/textures/spikes.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::SkullCurrency, "resources/textures/skull_currency.png") != GE_OK) return false;
 	if (m_TextureHolder.Load(ID::Texture::Fireball, "resources/textures/fireball.png") != GE_OK) return false;

@@ -112,7 +112,7 @@ bool GameScene::OnCreate(Context* const con)
 	// Background
 	m_BackgroundSprite = new sf::Sprite();
 	m_BackgroundSprite->setTexture(Application::Instance()->GetTexHolder().Get(ID::Texture::Bkgrnd_RedMtn));
-	m_BackgroundSprite->setScale(2.0f, 2.0f);
+	m_BackgroundSprite->setScale(1.0f, 2.0f);
 
 	// Health Sprite 
 	m_HealthSprite = new sf::Sprite();
@@ -203,7 +203,7 @@ void GameScene::LoadLevel()
 				break;
 				case ID::Type::Wall:
 				{
-					this->CreateGameObject(ID::Type::Wall, 64, 64, tile_pos.x, tile_pos.y, ID::Texture::BloodMtn_TileSet, 64, 64);
+					this->CreateGameObject(ID::Type::Wall, 32, 32, tile_pos.x, tile_pos.y, ID::Texture::DissappearPlatform, 0, 0, true, 2);// 64, 64);
 				}
 				break;
 				default:
